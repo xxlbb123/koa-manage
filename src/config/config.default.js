@@ -1,4 +1,4 @@
-const dotenv = require("dotenv");
-dotenv.config();
+const dotenv = require('dotenv')
+dotenv.config()
 // 将环境变量导出
-module.exports = process.env;
+module.exports = process.env
