@@ -6,5 +6,7 @@ const { koaBody } = require('koa-body')
 const koajwt = require('koa-jwt')
 app.use(koaBody())
 // 对错误的处理
-app.on('error', (err, ctx) => {})
+app.on('error', (err, ctx) => {
+  console.log(err)
+})
 module.exports = app
