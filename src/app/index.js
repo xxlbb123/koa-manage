@@ -15,5 +15,7 @@ app.use(koajwt().unless({
   path:[/^\/login/]
 }))
 // 对错误的处理
-app.on('error', (err, ctx) => {})
+app.on('error', (err, ctx) => {
+  console.log(err)
+})
 module.exports = app
