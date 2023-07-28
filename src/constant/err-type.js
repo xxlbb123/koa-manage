@@ -1,0 +1,10 @@
+module.exports={
+  TokenExpired:{
+    msg:"登录过期，请重新登录",
+    code:"4002"
+  },
+  TokenNotFound:{
+   msg:"未携带token",
+   code:"4001"
+  }
+}
