@@ -1,6 +1,4 @@
-import { Types } from "mongoose";
-
-const ProjectSchema = new Schema({
+const ProjectSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,

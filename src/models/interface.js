@@ -1,6 +1,4 @@
-import { Types } from "mongoose";
-
-const InterFaceSchema = new Schema({
+const InterFaceSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,

@@ -1,6 +1,4 @@
-import { Types } from "mongoose";
-
-const InterFaceRollBackSchema = new Schema({
+const InterFaceRollBackSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
