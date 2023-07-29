@@ -37,16 +37,40 @@ router.post('/editProject', (ctx) => {
   const { projectId, name, description, isPrivate, userList } = body
 })
 
+/**
+ * @api {post} /project/deleteProject 删除项目
+ * @apiName 删除项目
+ * @apiGroup 项目管理
+ *
+ * @apiBody {String} projectId 项目ID
+ *
+ */
 router.post('/deleteProject', (ctx) => {
   const body = ctx.request.body
   const { projectId } = body
 })
 
+/**
+ * @api {post} /project/deleteProject 查看项目列表
+ * @apiName 查看项目列表
+ * @apiGroup 项目管理
+ *
+ * @apiBody {String} projectId 项目ID
+ *
+ */
 router.post('/allProjects', (ctx) => {
   const body = ctx.request.body
-  const { userId } = body
+  const { projectId } = body
 })
 
+/**
+ * @api {post} /project/deleteProject 查看项目详情
+ * @apiName 查看项目详情
+ * @apiGroup 项目管理
+ *
+ * @apiBody {String} projectId 项目ID
+ *
+ */
 router.post('/projectDetail', (ctx) => {
   const body = ctx.request.body
   const { projectId } = body
