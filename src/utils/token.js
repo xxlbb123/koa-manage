@@ -4,9 +4,10 @@ const { TokenExpired, TokenNotFound } = require('../constant/err-type')
 const { secret } = require('../constant/secretKey')
 class JWt {
   // 创建token
-  static createToken(info) {
-    const token = jwt.sign(info, secret, {
-      expiresIn: 60 * 60 * 24 * 3
+  createToken(info) {
+    const token = jwt.sign({ info }, secret, {
+      // expiresIn: 60 * 60 * 24 * 3
+      expiresIn: '3d'
     })
     return token
   }
@@ -14,22 +15,25 @@ class JWt {
   // 检验token是否过期
   async handleTokenExpired(ctx, next) {
     await next().catch((err) => {
+      //  判断token是否过期
       if (err.name === 'TokenExpiredError') {
         err.status = 401
         ctx.body = TokenExpired
       } else {
-        throw err
+        throw new Error(err)
       }
     })
   }
   // 检验是否存在token
   async handleTokenNotFound(ctx, next) {
     await next().catch((err) => {
-      if (err.name === 'UnauthorizedError' && err.message === 'No authorization token found') {
+      console.log(err)
+      console.log(err.name, err.message)
+      if (err.name === 'UnauthorizedError' && err.message === 'Authentication Error') {
         ctx.status = 401
         ctx.body = TokenNotFound
       } else {
-        throw err
+        throw new Error(err)
       }
     })
   }

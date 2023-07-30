@@ -1,7 +1,5 @@
 const Router = require('koa-router')
-
 const router = new Router({ prefix: '/project' })
-
 /**
  * @api {post} /project/createProject 创建项目
  * @apiName 创建项目
@@ -76,4 +74,4 @@ router.post('/projectDetail', (ctx) => {
   const { projectId } = body
 })
 
-module.exports = router.routes()
+module.exports = router
