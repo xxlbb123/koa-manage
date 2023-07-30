@@ -49,7 +49,7 @@ router.post('/deleteProject', (ctx) => {
 })
 
 /**
- * @api {post} /project/deleteProject 查看项目列表
+ * @api {post} /project/allProjects 查看项目列表
  * @apiName 查看项目列表
  * @apiGroup 项目管理
  *
@@ -62,7 +62,7 @@ router.post('/allProjects', (ctx) => {
 })
 
 /**
- * @api {post} /project/deleteProject 查看项目详情
+ * @api {post} /project/projectDetail 查看项目详情
  * @apiName 查看项目详情
  * @apiGroup 项目管理
  *
