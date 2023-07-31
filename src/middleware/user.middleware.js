@@ -1,4 +1,4 @@
-const { UserFormatError, UserMessageError } = require('../constant/err-type')
+const { UserFormatError, UserMessageError, UserNameisExisted } = require('../constant/err-type')
 const { createToken } = require('../utils/token')
 const bcrypt = require('bcrypt')
 const userModel = require('../models/userSchema')
