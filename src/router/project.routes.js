@@ -95,6 +95,8 @@ router.post('/deleteProject', async (ctx) => {
  * @api {post} /project/allProjects 查看项目列表
  * @apiName 查看项目列表
  * @apiGroup 项目管理
+ * @apiDescription
+ * 通过请求头中的token获得用户ID，返回所有成员列表中包含该用户的项目
  *
  * @apiSuccess {Object[]} projects 项目列表
  * @apiSuccess {String} projects.name 项目名称
