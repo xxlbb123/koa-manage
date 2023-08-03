@@ -5,6 +5,7 @@ const projectModel = require('../models/project')
 const interfaceModel = require('../models/interface')
 
 const router = new Router({ prefix: '/project' })
+
 /**
  * @api {post} /project/createProject 创建项目
  * @apiName 创建项目
@@ -66,11 +67,22 @@ router.post('/editProject', async (ctx) => {
   const body = ctx.request.body
   const { projectId, name, description, isPrivate, members } = body
 
+  const permissionMap = {
+    read: 2,
+    write: 1,
+    admin: 0
+  }
   const update = {}
+
   name && (update.name = name)
-  description && (update.description = description)
+  description !== undefined && (update.description = description)
   isPrivate !== undefined && (update.isPrivate = isPrivate)
-  members && (update.members = members)
+  if (members) {
+    members.forEach((member) => {
+      member.permission = permissionMap[member.permission]
+    })
+    update.members = members
+  }
 
   try {
     await projectModel.updateOne({ _id: projectId }, update)
