@@ -12,12 +12,14 @@
   },
   "scripts": {
     "dev": "nodemon ./src/main.js",
-    "doc": "apidoc -i src -o apidoc"
+    "doc": "apidoc -i src -o apidoc",
+    "postdoc": "apidoc-markdown -p apidoc -o apidoc/doc.md"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.2.0",
     "@typescript-eslint/parser": "^6.2.0",
     "apidoc": "^1.1.0",
+    "apidoc-markdown": "^7.2.5",
     "eslint": "^8.45.0",
     "prettier": "^3.0.0"
   }
