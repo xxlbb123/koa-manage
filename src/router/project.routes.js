@@ -5,6 +5,7 @@ const projectModel = require('../models/project')
 const interfaceModel = require('../models/interface')
 
 const router = new Router({ prefix: '/project' })
+
 /**
  * @api {post} /project/createProject 创建项目
  * @apiName 创建项目
@@ -54,17 +55,45 @@ router.post('/createProject', async (ctx) => {
  * @apiGroup 项目管理
  *
  * @apiBody {String} projectId 项目ID
- * @apiBody {String} name 项目名称
- * @apiBody {String} description 项目描述
- * @apiBody {Boolean} isPrivate 是否是私有项目
- * @apiBody {Object[]} members 成员列表
+ * @apiBody {String} [name] 项目名称
+ * @apiBody {String} [description] 项目描述
+ * @apiBody {Boolean} [isPrivate] 是否是私有项目
+ * @apiBody {Object[]} [members] 成员列表
  * @apiBody {String} members.userId 成员ID
  * @apiBody {string="read","write","admin"} members.permission 成员权限
  *
  */
-router.post('/editProject', (ctx) => {
+router.post('/editProject', async (ctx) => {
   const body = ctx.request.body
   const { projectId, name, description, isPrivate, members } = body
+
+  const permissionMap = {
+    read: 2,
+    write: 1,
+    admin: 0
+  }
+  const update = {}
+
+  name && (update.name = name)
+  description !== undefined && (update.description = description)
+  isPrivate !== undefined && (update.isPrivate = isPrivate)
+  if (members) {
+    members.forEach((member) => {
+      member.permission = permissionMap[member.permission]
+    })
+    update.members = members
+  }
+
+  try {
+    await projectModel.updateOne({ _id: projectId }, update)
+    ctx.body = {
+      code: 200,
+      data: undefined,
+      message: 'Project edited successfully.'
+    }
+  } catch (err) {
+    throw err
+  }
 })
 
 /**
