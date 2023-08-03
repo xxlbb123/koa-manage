@@ -3,6 +3,7 @@ const { UserFormatError, UserMessageError, UserNameisExisted } = require('../con
 const { createToken, handleAnalyticToken } = require('../utils/token')
 const bcrypt = require('bcrypt')
 const userModel = require('../models/userSchema')
+const { log } = require('console')
 /**
  *
  * @param {password} 用户密码
@@ -79,10 +80,12 @@ const handleRegisterUser = async (ctx, next) => {
 }
 // 获取用户信息的中间件
 const handleReturnUserInfo = async (ctx, next) => {
-  const userMessage = handleAnalyticToken(ctx)
+  const token = ctx.request.headers['authorization']
+  const { username } = await handleAnalyticToken(token)
   ctx.body = {
     code: 200,
-    ...userMessage
+    msg: '用户信息',
+    username
   }
 }
 module.exports = {

@@ -3,6 +3,7 @@ const { TokenExpired, TokenNotFound } = require('../constant/err-type')
 // 导入token密钥
 const { secret } = require('../constant/secretKey')
 const userModel = require('../models/userSchema')
+const { log } = require('console')
 class JWt {
   // 创建token
   createToken(info) {
@@ -28,8 +29,8 @@ class JWt {
   // 检验是否存在token
   async handleTokenNotFound(ctx, next) {
     await next().catch((err) => {
+      // console.log(err.name, err.message)
       console.log(err)
-      console.log(err.name, err.message)
       if (err.name === 'UnauthorizedError' && err.message === 'Authentication Error') {
         ctx.status = 401
         ctx.body = TokenNotFound
@@ -39,12 +40,15 @@ class JWt {
     })
   }
   // 解析token,获取其中的信息
-  async handleAnalyticToken(ctx, next) {
+  async handleAnalyticToken(token) {
     try {
-      const token = ctx.request.headers['authorization']
-      // 解析获取token中的数据
-      const { _id } = jwt.verify(token.split(' ')[1], secret)
-      const userMessage = await userModel.findOne({ _id }, 'username')
+      // 解析获取token中的数据,info就是当时存进去的数据
+      const { info } = jwt.verify(token.split(' ')[1], secret)
+      const userMessage = await userModel.findOne({ _id: info }, { username: 1, _id: 0 })
+      // ctx.body = {
+      //   code: 200,
+      //   ...userMessage
+      // }
       return userMessage
     } catch (error) {
       throw new Error(error)

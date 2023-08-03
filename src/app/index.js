@@ -1,6 +1,7 @@
 const Koa = require('koa')
 const app = new Koa()
 const errHandler = require('./errHandler')
+const { secret } = require('../constant/secretKey')
 const { handleTokenExpired, handleTokenNotFound } = require('../utils/token')
 // 导入数据库
 require('../db/index')
@@ -16,7 +17,7 @@ app.use(koaBody())
 app.use(handleTokenNotFound, handleTokenExpired)
 // 使用koajwt中间件来检验token
 app.use(
-  koajwt().unless({
+  koajwt({ secret }).unless({
     // 设置某些接口请求时不做校验
     path: [/^\/user\/login/, /^\/user\/register/]
   })
