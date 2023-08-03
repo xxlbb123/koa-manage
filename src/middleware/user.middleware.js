@@ -1,5 +1,6 @@
 const { UserFormatError, UserMessageError, UserNameisExisted } = require('../constant/err-type')
-const { createToken } = require('../utils/token')
+
+const { createToken, handleAnalyticToken } = require('../utils/token')
 const bcrypt = require('bcrypt')
 const userModel = require('../models/userSchema')
 /**
@@ -54,7 +55,6 @@ const handleValidatorUser = async (ctx, next) => {
 const handleRegisterUser = async (ctx, next) => {
   console.log(ctx.request.body)
   const { username, password } = ctx.request.body
-
   try {
     //  检查用户名是否已经存在
     const existUser = await userModel.findOne({ username })
@@ -77,7 +77,16 @@ const handleRegisterUser = async (ctx, next) => {
     throw new Error(error)
   }
 }
+// 获取用户信息的中间件
+const handleReturnUserInfo = async (ctx, next) => {
+  const userMessage = handleAnalyticToken(ctx)
+  ctx.body = {
+    code: 200,
+    ...userMessage
+  }
+}
 module.exports = {
   handleValidatorUser,
-  handleRegisterUser
+  handleRegisterUser,
+  handleReturnUserInfo
 }

@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken')
 const { TokenExpired, TokenNotFound } = require('../constant/err-type')
 // 导入token密钥
 const { secret } = require('../constant/secretKey')
+const userModel = require('../models/userSchema')
 class JWt {
   // 创建token
   createToken(info) {
@@ -36,6 +37,18 @@ class JWt {
         throw new Error(err)
       }
     })
+  }
+  // 解析token,获取其中的信息
+  async handleAnalyticToken(ctx, next) {
+    try {
+      const token = ctx.request.headers['authorization']
+      // 解析获取token中的数据
+      const { _id } = jwt.verify(token.split(' ')[1], secret)
+      const userMessage = await userModel.findOne({ _id }, 'username')
+      return userMessage
+    } catch (error) {
+      throw new Error(error)
+    }
   }
 }
 module.exports = new JWt()
