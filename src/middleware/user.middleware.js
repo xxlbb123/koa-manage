@@ -3,7 +3,6 @@ const { UserFormatError, UserMessageError, UserNameisExisted } = require('../con
 const { createToken, handleAnalyticToken } = require('../utils/token')
 const bcrypt = require('bcrypt')
 const userModel = require('../models/userSchema')
-const { log } = require('console')
 /**
  *
  * @param {password} 用户密码
@@ -36,9 +35,11 @@ const handleValidatorUser = async (ctx, next) => {
     const token = createToken(existUser._id.toString()) //注意这里需要转换为string
     ctx.status = 200
     ctx.body = {
-      code: '2000',
+      code: 200,
       msg: '登录成功',
-      token
+      data: {
+        token
+      }
     }
   } catch (error) {
     throw new Error(error)
@@ -71,7 +72,7 @@ const handleRegisterUser = async (ctx, next) => {
     await newUser.save()
     ctx.status = 201 //创建用户
     ctx.body = {
-      code: '2001',
+      code: 200,
       msg: '注册成功'
     }
   } catch (error) {
@@ -85,7 +86,9 @@ const handleReturnUserInfo = async (ctx, next) => {
   ctx.body = {
     code: 200,
     msg: '用户信息',
-    username
+    data: {
+      username
+    }
   }
 }
 module.exports = {

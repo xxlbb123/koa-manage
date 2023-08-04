@@ -1,22 +1,22 @@
 module.exports = {
   TokenExpired: {
     msg: '登录过期，请重新登录',
-    code: '4002'
+    code: 401
   },
   TokenNotFound: {
     msg: '未携带token',
-    code: '4001'
+    code: 401
   },
   UserFormatError: {
     msg: '用户名或者密码为空',
-    code: '4000'
+    code: 510
   },
   UserMessageError: {
     msg: '用户名或者密码错误',
-    code: '4005'
+    code: 510
   },
   UserNameisExisted: {
     msg: '用户名已经存在',
-    code: '4009'
+    code: 510
   }
 }
