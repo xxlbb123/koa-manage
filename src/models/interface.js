@@ -28,6 +28,12 @@ const InterFaceSchema = new mongoose.Schema({
   response_data: {
     type: Object,
     required: true
+  },
+
+  project: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'project',
+    required: true
   }
 })
 
