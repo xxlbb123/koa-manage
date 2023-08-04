@@ -22,7 +22,7 @@ router.post('/createProject', async (ctx) => {
   const body = ctx.request.body
   const { name, description, isPrivate } = body
 
-  const { info } = jwt.verify(ctx.request.headers['token'], secret)
+  const { info } = jwt.verify(ctx.request.headers['authorization'].split(' ')[1], secret)
   const newProject = new projectModel({
     name,
     description,
@@ -33,7 +33,8 @@ router.post('/createProject', async (ctx) => {
         permission: 0
       }
     ],
-    isPrivate
+    isPrivate,
+    created_time: new Date()
   })
   try {
     const { _id } = await newProject.save()
@@ -85,7 +86,7 @@ router.post('/editProject', async (ctx) => {
   }
 
   try {
-    await projectModel.updateOne({ _id: projectId }, update)
+    await projectModel.findByIdAndUpdate(projectId, update)
     ctx.body = {
       code: 200,
       data: undefined,
@@ -109,7 +110,7 @@ router.post('/deleteProject', async (ctx) => {
   const { projectId } = body
 
   try {
-    await projectModel.deleteOne({ _id: projectId })
+    await projectModel.findByIdAndDelete(projectId)
     ctx.body = {
       code: 200,
       data: undefined,
@@ -139,10 +140,10 @@ router.post('/deleteProject', async (ctx) => {
  *
  */
 router.post('/allProjects', async (ctx) => {
-  const { info } = jwt.verify(ctx.request.headers['token'], secret)
+  const { info } = jwt.verify(ctx.request.headers['authorization'].split(' ')[1], secret)
 
   try {
-    const projects = await projectModel.find({ members: { $in: [info] } })
+    const projects = await projectModel.find({ members: { $elemMatch: { member: info } } })
     ctx.body = {
       code: 200,
       data: {
@@ -186,9 +187,10 @@ router.post('/projectDetail', async (ctx) => {
   const { projectId } = body
 
   try {
-    const project = await projectModel.findOne({ _id: projectId })
-    const interface = await interfaceModel.findMany({ project: projectId })
-    project.interface = interface
+    const project = await projectModel.findById(projectId)
+    const interface = await interfaceModel.find({ project: projectId })
+    project['_doc'].interface = interface
+
     ctx.body = {
       code: 200,
       data: {
