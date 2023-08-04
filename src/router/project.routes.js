@@ -33,7 +33,8 @@ router.post('/createProject', async (ctx) => {
         permission: 0
       }
     ],
-    isPrivate
+    isPrivate,
+    created_time: new Date()
   })
   try {
     const { _id } = await newProject.save()

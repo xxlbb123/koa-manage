@@ -36,6 +36,11 @@ const ProjectSchema = new mongoose.Schema({
   isPrivate: {
     type: Boolean,
     required: true
+  },
+
+  created_time: {
+    type: Date,
+    required: true
   }
 })
 
