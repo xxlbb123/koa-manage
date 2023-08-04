@@ -7,6 +7,7 @@ const { handleTokenExpired, handleTokenNotFound } = require('../utils/token')
 require('../db/index')
 const userRouter = require('../router/users.routes')
 const projectRouter = require('../router/project.routes')
+const interfaceRouter = require('../router/interface.routes')
 // 导入koaBody中间件，处理post请求参数
 const { koaBody } = require('koa-body')
 // 导入koajwt，可以用来校验token
@@ -25,6 +26,8 @@ app.use(
 // 注册路由
 app.use(userRouter.routes(), userRouter.allowedMethods())
 app.use(projectRouter.routes(), projectRouter.allowedMethods())
+app.use(interfaceRouter.routes(), interfaceRouter.allowedMethods())
+
 // 对错误的处理
 app.on('error', errHandler)
 module.exports = app
