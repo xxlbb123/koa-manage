@@ -1,4 +1,4 @@
-const { UserFormatError, UserMessageError, UserNameisExisted } = require('../constant/err-type')
+const { UserFormatError, UserMessageError, UserNameisExisted, UserMessageNotFound } = require('../constant/err-type')
 
 const { createToken, handleAnalyticToken } = require('../utils/token')
 const bcrypt = require('bcrypt')
@@ -23,7 +23,7 @@ const handleValidatorUser = async (ctx, next) => {
     // 首先检查用户是否存在
     if (!existUser) {
       ctx.status = 401
-      return ctx.app.emit('error', UserMessageError, ctx)
+      return ctx.app.emit('error', UserMessageNotFound, ctx)
     }
     //  判断密码是否正确
     const passwordMatch = await bcrypt.compare(password, existUser.password)

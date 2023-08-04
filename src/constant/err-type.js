@@ -4,12 +4,16 @@ module.exports = {
     code: 401
   },
   TokenNotFound: {
-    msg: '未携带token',
+    msg: 'token错误或未携带token',
     code: 401
   },
   UserFormatError: {
     msg: '用户名或者密码为空',
     code: 510
+  },
+  UserMessageNotFound: {
+    code: 510,
+    msg: '用户不存在'
   },
   UserMessageError: {
     msg: '用户名或者密码错误',
