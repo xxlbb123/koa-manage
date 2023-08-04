@@ -1,3 +1,4 @@
+const mongoose = require('mongoose')
 const ProjectSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -10,7 +11,7 @@ const ProjectSchema = new mongoose.Schema({
   },
 
   created_by: {
-    type: Types.ObjectId, //ref userid
+    type: mongoose.Schema.Types.ObjectId, //ref userid
     ref: 'user',
     required: true
   },
@@ -18,7 +19,7 @@ const ProjectSchema = new mongoose.Schema({
   members: [
     {
       member: {
-        type: Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'user', // 指向 User 模型的引用
         required: true
       },

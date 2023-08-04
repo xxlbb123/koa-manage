@@ -1,70 +1,67 @@
+const mongoose = require('mongoose')
 const InterFaceSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
+    required: true
   },
 
   url: {
     type: String,
-    required: true,
+    required: true
   },
 
   http_method: {
     type: String,
-    required: true,
+    required: true
   },
 
   request_params: {
     type: String,
-    required: true,
+    required: true
   },
 
   response_data: {
     type: String,
-    required: true,
+    required: true
   },
 
   project: {
-    type: Types.ObjectId,
-    ref: "project",
-    required: true,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'project',
+    required: true
   },
 
   created_by: {
-    type: Types.ObjectId,
-    ref: "user",
-    required: true,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'user',
+    required: true
   },
 
   curr_version: {
     type: Number,
-    required: true,
+    required: true
   },
 
   changeLogs: [
     {
       version: {
         type: Number,
-        required: true,
+        required: true
       },
 
       log: {
         type: String,
-        required: true,
+        required: true
       },
 
       update_by: {
-        type: Types.ObjectId,
-        ref: "user",
-        required: true,
-      },
-    },
-  ],
-});
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user',
+        required: true
+      }
+    }
+  ]
+})
 
-const interfaceModel = mongoose.model(
-  "interface",
-  InterFaceSchema,
-  "interfaces"
-);
-module.exports = interfaceModel;
+const interfaceModel = mongoose.model('interface', InterFaceSchema, 'interfaces')
+module.exports = interfaceModel

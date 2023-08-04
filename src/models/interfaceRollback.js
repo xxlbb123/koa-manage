@@ -1,50 +1,47 @@
+const mongoose = require('mongoose')
 const InterFaceRollBackSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
+    required: true
   },
 
   url: {
     type: String,
-    required: true,
+    required: true
   },
 
   http_method: {
     type: String,
-    required: true,
+    required: true
   },
 
   request_params: {
     type: String,
-    required: true,
+    required: true
   },
 
   response_data: {
     type: String,
-    required: true,
+    required: true
   },
 
   project: {
     type: Types.ObjectId,
-    ref: "project",
-    required: true,
+    ref: 'project',
+    required: true
   },
 
   created_by: {
     type: Types.ObjectId,
-    ref: "user",
-    required: true,
+    ref: 'user',
+    required: true
   },
 
   version: {
     type: Number,
-    required: true,
-  },
-});
+    required: true
+  }
+})
 
-const interfaceRollbackModel = mongoose.model(
-  "interfaceRollback",
-  InterFaceRollBackSchema,
-  "interfaceRollbacks"
-);
-module.exports = interfaceRollbackModel;
+const interfaceRollbackModel = mongoose.model('interfaceRollback', InterFaceRollBackSchema, 'interfaceRollbacks')
+module.exports = interfaceRollbackModel
