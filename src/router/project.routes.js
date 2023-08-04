@@ -22,7 +22,7 @@ router.post('/createProject', async (ctx) => {
   const body = ctx.request.body
   const { name, description, isPrivate } = body
 
-  const { info } = jwt.verify(ctx.request.headers['token'], secret)
+  const { info } = jwt.verify(ctx.request.headers['authorization'].split(' ')[1], secret)
   const newProject = new projectModel({
     name,
     description,
@@ -140,10 +140,10 @@ router.post('/deleteProject', async (ctx) => {
  *
  */
 router.post('/allProjects', async (ctx) => {
-  const { info } = jwt.verify(ctx.request.headers['token'], secret)
+  const { info } = jwt.verify(ctx.request.headers['authorization'].split(' ')[1], secret)
 
   try {
-    const projects = await projectModel.find({ members: { $in: [info] } })
+    const projects = await projectModel.find({ members: { $elemMatch: { member: info } } })
     ctx.body = {
       code: 200,
       data: {
@@ -188,8 +188,9 @@ router.post('/projectDetail', async (ctx) => {
 
   try {
     const project = await projectModel.findOne({ _id: projectId })
-    const interface = await interfaceModel.findMany({ project: projectId })
-    project.interface = interface
+    const interface = await interfaceModel.find({ project: projectId })
+    project['_doc'].interface = interface
+
     ctx.body = {
       code: 200,
       data: {
