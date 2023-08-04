@@ -15,52 +15,20 @@ const InterFaceSchema = new mongoose.Schema({
     required: true
   },
 
-  request_params: {
-    type: String,
+  query: {
+    type: Object,
+    required: true
+  },
+
+  body: {
+    type: Object,
     required: true
   },
 
   response_data: {
-    type: String,
+    type: Object,
     required: true
-  },
-
-  project: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'project',
-    required: true
-  },
-
-  created_by: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'user',
-    required: true
-  },
-
-  curr_version: {
-    type: Number,
-    required: true
-  },
-
-  changeLogs: [
-    {
-      version: {
-        type: Number,
-        required: true
-      },
-
-      log: {
-        type: String,
-        required: true
-      },
-
-      update_by: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'user',
-        required: true
-      }
-    }
-  ]
+  }
 })
 
 const interfaceModel = mongoose.model('interface', InterFaceSchema, 'interfaces')
