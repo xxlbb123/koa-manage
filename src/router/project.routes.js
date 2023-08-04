@@ -86,7 +86,7 @@ router.post('/editProject', async (ctx) => {
   }
 
   try {
-    await projectModel.updateOne({ _id: projectId }, update)
+    await projectModel.findByIdAndUpdate(projectId, update)
     ctx.body = {
       code: 200,
       data: undefined,
@@ -110,7 +110,7 @@ router.post('/deleteProject', async (ctx) => {
   const { projectId } = body
 
   try {
-    await projectModel.deleteOne({ _id: projectId })
+    await projectModel.findByIdAndDelete(projectId)
     ctx.body = {
       code: 200,
       data: undefined,
@@ -187,7 +187,7 @@ router.post('/projectDetail', async (ctx) => {
   const { projectId } = body
 
   try {
-    const project = await projectModel.findOne({ _id: projectId })
+    const project = await projectModel.findById(projectId)
     const interface = await interfaceModel.find({ project: projectId })
     project['_doc'].interface = interface
 
