@@ -118,6 +118,8 @@ router.post('/editInterface', async (ctx) => {
       return
     }
 
+    const { project } = await interfaceModel.findById(interfaceId)
+
     const newInterface = new interfaceModel({
       name,
       url,
@@ -125,15 +127,16 @@ router.post('/editInterface', async (ctx) => {
       query,
       body,
       response_data: responseData,
-      project: projectId
+      project
     })
     const { _id } = await newInterface.save()
 
-    const update = {
+    const filter = { interfaces: { $elemMatch: { interface: interfaceId } } }
+    const { interfaces } = await logModel.findOne(filter)
+    await logModel.findOneAndUpdate(filter, {
       $push: { interfaces: { interface: _id, update_by: info, update_time: new Date() } },
-      $set: { current_version: $interfaces.length - 1 }
-    }
-    await logModel.findOneAndUpdate({ interfaces: { $elemMatch: { interface: interfaceId } } }, update)
+      $set: { current_version: interfaces.length }
+    })
 
     ctx.body = {
       code: 200,
@@ -215,7 +218,6 @@ router.post('/allInterface', async (ctx) => {
       }
     })
     await Promise.all(logsPromise)
-    console.log(1)
     ctx.body = {
       code: 200,
       data: {
