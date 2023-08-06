@@ -6,7 +6,7 @@ const { APP_DEV } = require('./config/config.default')
 // const userModel = require('./models/user')
 // const user = new userModel({
 //   username:"123",
-//   password:"123"
+//   password:"123"`
 // })
 // const userSave=  user.save()
 
