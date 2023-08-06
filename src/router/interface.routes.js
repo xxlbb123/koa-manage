@@ -32,7 +32,7 @@ router.post('/createInterface', async (ctx) => {
     const i = await interfaceModel.find({ project: projectId, name })
     if (i) {
       ctx.body = {
-        code: 409,
+        code: 500,
         message: 'Interface with the same name has already existed.'
       }
       return
@@ -92,10 +92,59 @@ router.post('/importInterface', async (ctx) => {
  * @apiGroup 接口管理
  *
  * @apiBody {String} interfaceId 接口ID
+ * @apiBody {String} name 接口名称
+ * @apiBody {String} url 接口地址
+ * @apiBody {String="GET","POST","PUT","DELETE"} method 请求方法
+ * @apiBody {Object} query 请求参数格式
+ * @apiBody {Object} body 请求体格式
+ * @apiBody {Object} responseData 返回数据格式
+ *
+ * @apiSuccess {String} interfaceId 修改后的接口ID
  *
  */
 router.post('/editInterface', async (ctx) => {
-  const body = ctx.request.body
+  const b = ctx.request.body
+  const { interfaceId, name, url, method, query, body, responseData } = b
+
+  const { info } = jwt.verify(ctx.request.headers['authorization'].split(' ')[1], secret)
+
+  try {
+    const i = await interfaceModel.findById(interfaceId)
+    if (!i) {
+      ctx.body = {
+        code: 500,
+        message: `Interface with interfaceId:${interfaceId} doesn't exist.`
+      }
+      return
+    }
+
+    const newInterface = new interfaceModel({
+      name,
+      url,
+      http_method: method,
+      query,
+      body,
+      response_data: responseData,
+      project: projectId
+    })
+    const { _id } = await newInterface.save()
+
+    const update = {
+      $push: { interfaces: { interface: _id, update_by: info, update_time: new Date() } },
+      $set: { current_version: $interfaces.length - 1 }
+    }
+    await logModel.findOneAndUpdate({ interfaces: { $elemMatch: { interface: interfaceId } } }, update)
+
+    ctx.body = {
+      code: 200,
+      data: {
+        interfaceId: _id
+      },
+      message: 'Interface edited successfully.'
+    }
+  } catch (err) {
+    throw err
+  }
 })
 
 /**
