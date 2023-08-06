@@ -1,7 +1,7 @@
 const { UserFormatError, UserMessageError, UserNameisExisted, UserMessageNotFound } = require('../constant/err-type')
 
 const { createToken, handleAnalyticToken } = require('../utils/token')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 const userModel = require('../models/userSchema')
 /**
  *
