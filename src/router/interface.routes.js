@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken')
 const { secret } = require('../constant/secretKey')
 const logModel = require('../models/log')
 const interfaceModel = require('../models/interface')
+const { getDate } = require('../utils/util')
 
 const router = new Router({ prefix: '/interface' })
 
@@ -56,7 +57,7 @@ router.post('/createInterface', async (ctx) => {
         {
           interface: _id,
           update_by: info,
-          update_time: new Date()
+          update_time: getDate()
         }
       ]
     })
@@ -134,7 +135,7 @@ router.post('/editInterface', async (ctx) => {
     const filter = { interfaces: { $elemMatch: { interface: interfaceId } } }
     const { interfaces } = await logModel.findOne(filter)
     await logModel.findOneAndUpdate(filter, {
-      $push: { interfaces: { interface: _id, update_by: info, update_time: new Date() } },
+      $push: { interfaces: { interface: _id, update_by: info, update_time: getDate() } },
       $set: { current_version: interfaces.length }
     })
 

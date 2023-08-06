@@ -4,6 +4,7 @@ const { secret } = require('../constant/secretKey')
 const projectModel = require('../models/project')
 const interfaceModel = require('../models/interface')
 const logModel = require('../models/log')
+const { getDate } = require('../utils/util')
 
 const router = new Router({ prefix: '/project' })
 
@@ -35,7 +36,7 @@ router.post('/createProject', async (ctx) => {
       }
     ],
     isPrivate,
-    created_time: new Date()
+    created_time: getDate()
   })
   try {
     const { _id } = await newProject.save()
