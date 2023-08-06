@@ -188,22 +188,25 @@ router.post('/projectDetail', async (ctx) => {
 
   try {
     const project = await projectModel.findById(projectId)
-    const log = await logModel.find({ project: projectId })
 
-    if (!log.length) {
+    const logs = await logModel.find({ project: projectId })
+    const interfaceArray = []
+
+    if (!logs.length) {
       project['_doc'].interface = []
     } else {
-      const interfaceIds = []
-      log.forEach((log) => {
+      const logsPromise = logs.map(async (log) => {
         const { current_version, interfaces } = log
-        interfaceIds.push(interfaces[current_version].interface)
+
+        if (current_version < interfaces.length) {
+          const { interface } = interfaces[current_version]
+          const i = await interfaceModel.findById(interface)
+          interfaceArray.push(i)
+        }
       })
-      const promise = interfaceIds.map((id) => {
-        const interface = interfaceModel.findById(id)
-        return interface
-      })
-      const interfaces = await Promise.all(promise)
-      project['_doc'].interface = interfaces
+      await Promise.all(logsPromise)
+
+      project['_doc'].interface = interfaceArray
     }
 
     ctx.body = {
