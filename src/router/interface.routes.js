@@ -30,7 +30,7 @@ router.post('/createInterface', async (ctx) => {
 
   try {
     const i = await interfaceModel.find({ project: projectId, name })
-    if (i) {
+    if (i.length) {
       ctx.body = {
         code: 500,
         message: 'Interface with the same name has already existed.'
@@ -192,13 +192,13 @@ router.post('/allInterface', async (ctx) => {
 
   try {
     const logs = await logModel.find({ project: projectId })
-    const interfaces = []
+    const interfaceArray = []
 
     if (!logs.length) {
       ctx.body = {
         code: 200,
         data: {
-          interfaces
+          interfaceArray
         },
         message: 'Interface searched successfully.'
       }
@@ -211,15 +211,15 @@ router.post('/allInterface', async (ctx) => {
       if (current_version < interfaces.length) {
         const { interface } = interfaces[current_version]
         const i = await interfaceModel.findById(interface)
-        interfaces.push(i)
+        interfaceArray.push(i)
       }
     })
     await Promise.all(logsPromise)
-
+    console.log(1)
     ctx.body = {
       code: 200,
       data: {
-        interfaces
+        interfaces: interfaceArray
       },
       message: ''
     }
