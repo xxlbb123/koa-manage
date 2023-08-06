@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken')
 const { secret } = require('../constant/secretKey')
 const projectModel = require('../models/project')
 const interfaceModel = require('../models/interface')
+const logModel = require('../models/log')
 
 const router = new Router({ prefix: '/project' })
 
@@ -176,10 +177,9 @@ router.post('/allProjects', async (ctx) => {
  * @apiSuccess {String} project.interface.name 接口名称
  * @apiSuccess {String} project.interface.url 接口URL
  * @apiSuccess {String} project.interface.http_method 接口方法
- * @apiSuccess {String} project.interface.request_params 接口参数
- * @apiSuccess {String} project.interface.response_data 接口响应数据
- * @apiSuccess {String} project.interface.created_by 接口创建者
- * @apiSuccess {Number} project.interface.curr_version 接口版本
+ * @apiSuccess {Object} project.interface.query 请求参数格式
+ * @apiSuccess {Object} project.interface.body 请求体格式
+ * @apiSuccess {Object} project.interface.responseData 返回数据格式
  *
  */
 router.post('/projectDetail', async (ctx) => {
@@ -188,8 +188,23 @@ router.post('/projectDetail', async (ctx) => {
 
   try {
     const project = await projectModel.findById(projectId)
-    const interface = await interfaceModel.find({ project: projectId })
-    project['_doc'].interface = interface
+    const log = await logModel.find({ project: projectId })
+
+    if (!log.length) {
+      project['_doc'].interface = []
+    } else {
+      const interfaceIds = []
+      log.forEach((log) => {
+        const { current_version, interfaces } = log
+        interfaceIds.push(interfaces[current_version].interface)
+      })
+      const promise = interfaceIds.map((id) => {
+        const interface = interfaceModel.findById(id)
+        return interface
+      })
+      const interfaces = await Promise.all(promise)
+      project['_doc'].interface = interfaces
+    }
 
     ctx.body = {
       code: 200,
