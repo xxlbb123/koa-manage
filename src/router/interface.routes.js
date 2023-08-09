@@ -24,8 +24,7 @@ const router = new Router({ prefix: '/interface' })
  *
  */
 router.post('/createInterface', async (ctx) => {
-  const b = ctx.request.body
-  const { projectId, name, url, method, query, body, responseData } = b
+  const { projectId, name, url, method, query, body, responseData } = ctx.request.body
 
   const { info } = jwt.verify(ctx.request.headers['authorization'].split(' ')[1], secret)
 
@@ -38,7 +37,7 @@ router.post('/createInterface', async (ctx) => {
       }
       return
     }
-
+    // 创建新的接口
     const newInterface = new interfaceModel({
       name,
       url,
@@ -48,6 +47,7 @@ router.post('/createInterface', async (ctx) => {
       response_data: responseData,
       project: projectId
     })
+    // 新创建的接口id
     const { _id } = await newInterface.save()
 
     const newLog = new logModel({
@@ -104,8 +104,7 @@ router.post('/importInterface', async (ctx) => {
  *
  */
 router.post('/editInterface', async (ctx) => {
-  const b = ctx.request.body
-  const { interfaceId, name, url, method, query, body, responseData } = b
+  const { interfaceId, name, url, method, query, body, responseData } = ctx.request.body
 
   const { info } = jwt.verify(ctx.request.headers['authorization'].split(' ')[1], secret)
 
@@ -130,10 +129,12 @@ router.post('/editInterface', async (ctx) => {
       response_data: responseData,
       project
     })
+    // 新接口的id
     const { _id } = await newInterface.save()
 
     const filter = { interfaces: { $elemMatch: { interface: interfaceId } } }
     const { interfaces } = await logModel.findOne(filter)
+    // 更新接口
     await logModel.findOneAndUpdate(filter, {
       $push: { interfaces: { interface: _id, update_by: info, update_time: getDate() } },
       $set: { current_version: interfaces.length }

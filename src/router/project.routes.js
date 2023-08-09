@@ -23,7 +23,6 @@ const router = new Router({ prefix: '/project' })
 router.post('/createProject', async (ctx) => {
   const body = ctx.request.body
   const { name, description, isPrivate } = body
-
   const { info } = jwt.verify(ctx.request.headers['authorization'].split(' ')[1], secret)
   const newProject = new projectModel({
     name,
@@ -80,7 +79,7 @@ router.post('/editProject', async (ctx) => {
   name && (update.name = name)
   description !== undefined && (update.description = description)
   isPrivate !== undefined && (update.isPrivate = isPrivate)
-  if (members) {
+  if (members.length > 0) {
     members.forEach((member) => {
       member.permission = permissionMap[member.permission]
     })
@@ -112,7 +111,13 @@ router.post('/deleteProject', async (ctx) => {
   const { projectId } = body
 
   try {
+    // 首先删除相关项目
     await projectModel.findByIdAndDelete(projectId)
+    // 查找到相关的logs,返回一个数组
+    await logModel.deleteMany({ project: projectId })
+    //  删除与这个项目相关的接口
+    await interfaceModel.deleteMany({ project: projectId })
+    // 删除相关的接口
     ctx.body = {
       code: 200,
       data: undefined,
@@ -129,7 +134,6 @@ router.post('/deleteProject', async (ctx) => {
  * @apiGroup 项目管理
  * @apiDescription
  * 通过请求头中的token获得用户ID，返回所有成员列表中包含该用户的项目
- *
  * @apiSuccess {Object[]} projects 项目列表
  * @apiSuccess {String} projects.name 项目名称
  * @apiSuccess {String} projects.description 项目描述
@@ -142,8 +146,8 @@ router.post('/deleteProject', async (ctx) => {
  *
  */
 router.post('/allProjects', async (ctx) => {
+  // 获取到的这个info其实是用户id
   const { info } = jwt.verify(ctx.request.headers['authorization'].split(' ')[1], secret)
-
   try {
     const projects = await projectModel.find({ members: { $elemMatch: { member: info } } })
     ctx.body = {
@@ -186,27 +190,31 @@ router.post('/allProjects', async (ctx) => {
 router.post('/projectDetail', async (ctx) => {
   const body = ctx.request.body
   const { projectId } = body
-
   try {
+    // 通过projectId来查找相应的项目
     const project = await projectModel.findById(projectId)
 
     const logs = await logModel.find({ project: projectId })
+    // console.log(logs)
     const interfaceArray = []
 
     if (!logs.length) {
       project['_doc'].interface = []
     } else {
+      // 每次调用map方法返回一个async函数，本质是一个promise对象
       const logsPromise = logs.map(async (log) => {
         const { current_version, interfaces } = log
-
+        // current_version表示的是当前接口的版本，通过这种方式支持历史版本的回滚
         if (current_version < interfaces.length) {
+          // 这里的interface表示的是接口的id
           const { interface } = interfaces[current_version]
           const i = await interfaceModel.findById(interface)
+          // 将查询到的接口追加到interfaceArray中
           interfaceArray.push(i)
         }
       })
+      // 通过Promise.all处理所有异步任务
       await Promise.all(logsPromise)
-
       project['_doc'].interface = interfaceArray
     }
 

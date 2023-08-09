@@ -44,7 +44,7 @@ class JWt {
     try {
       // 解析获取token中的数据,info就是当时存进去的数据
       const { info } = jwt.verify(token.split(' ')[1], secret)
-      const userMessage = await userModel.findOne({ _id: info }, { username: 1, _id: 0 })
+      const userMessage = await userModel.findOne({ _id: info }, { username: 1, _id: 1 })
       return userMessage
     } catch (error) {
       throw new Error(error)

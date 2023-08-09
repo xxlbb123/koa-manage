@@ -22,13 +22,13 @@ const handleValidatorUser = async (ctx, next) => {
     const existUser = await userModel.findOne({ username })
     // 首先检查用户是否存在
     if (!existUser) {
-      ctx.status = 401
+      ctx.status = 200
       return ctx.app.emit('error', UserMessageNotFound, ctx)
     }
     //  判断密码是否正确
     const passwordMatch = await bcrypt.compare(password, existUser.password)
     if (!passwordMatch) {
-      ctx.status = 401
+      ctx.status = 200
       return ctx.app.emit('error', UserMessageError, ctx)
     }
     // 签发token
@@ -61,7 +61,7 @@ const handleRegisterUser = async (ctx, next) => {
     //  检查用户名是否已经存在
     const existUser = await userModel.findOne({ username })
     if (existUser) {
-      ctx.status = 409
+      ctx.status = 200
       return ctx.app.emit('error', UserNameisExisted, ctx)
     }
     // 将密码进行加盐处理
@@ -82,12 +82,13 @@ const handleRegisterUser = async (ctx, next) => {
 // 获取用户信息的中间件
 const handleReturnUserInfo = async (ctx, next) => {
   const token = ctx.request.headers['authorization']
-  const { username } = await handleAnalyticToken(token)
+  const { username, _id } = await handleAnalyticToken(token)
   ctx.body = {
     code: 200,
     msg: '用户信息',
     data: {
-      username
+      username,
+      id: _id
     }
   }
 }
