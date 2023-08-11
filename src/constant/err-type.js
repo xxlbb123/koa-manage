@@ -22,5 +22,9 @@ module.exports = {
   UserNameisExisted: {
     msg: '用户名已经存在',
     code: 510
+  },
+  importSwaggerError: {
+    msg: 'swagger导入失败',
+    code: 510
   }
 }

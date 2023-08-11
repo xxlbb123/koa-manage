@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken')
 const { secret } = require('../constant/secretKey')
 const logModel = require('../models/log')
 const interfaceModel = require('../models/interface')
+const { importSwaggerError } = require('../constant/err-type')
+const swaggerParser = require('swagger-parser')
 const { getDate } = require('../utils/util')
 
 const router = new Router({ prefix: '/interface' })
@@ -84,7 +86,37 @@ router.post('/createInterface', async (ctx) => {
  *
  */
 router.post('/importInterface', async (ctx) => {
-  const body = ctx.request.body
+  // 获取用户的id
+  const { info } = jwt.verify(ctx.request.headers['authorization'].split(' ')[1], secret)
+  try {
+    const { swaggerDocument } = ctx.request.body
+    if (!swaggerDocument) {
+      ctx.status = 200
+      return ctx.app.emit('error', importSwaggerError, ctx)
+    }
+    // 解析swagger文档
+    const swagger = await swaggerParser.parse(swaggerDocument)
+    // 处理接口信息并存入数据库中
+    console.log(swagger.paths)
+
+    swagger.paths.forEach(async (pathObj, path) => {
+      Object.keys(pathObj).forEach(async (method) => {
+        const interfaceData = {
+          name: pathObj[method].summary,
+          url: path,
+          http_method: method,
+          query: pathObj[method].parameters,
+          body: pathObj[method].requestBody,
+          response_data: pathObj[method].responses,
+          project: mongoose.Types.ObjectId('your_project_id') // 替换为项目的 ObjectID
+        }
+        const newInterface = new interfaceModel(interfaceData)
+        await newInterface.save()
+      })
+    })
+  } catch (error) {
+    throw new Error(error)
+  }
 })
 
 /**

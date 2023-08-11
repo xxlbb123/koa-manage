@@ -3,7 +3,7 @@ const { TokenExpired, TokenNotFound } = require('../constant/err-type')
 // 导入token密钥
 const { secret } = require('../constant/secretKey')
 const userModel = require('../models/userSchema')
-const { log } = require('console')
+const app = require('../app')
 class JWt {
   // 创建token
   createToken(info) {
@@ -17,9 +17,10 @@ class JWt {
   // 检验token是否过期
   async handleTokenExpired(ctx, next) {
     await next().catch((err) => {
+      console.log(err.name, err.message)
       //  判断token是否过期
       if (err.name === 'TokenExpiredError') {
-        err.status = 401
+        err.status = 200
         ctx.body = TokenExpired
       } else {
         throw new Error(err)
@@ -27,14 +28,25 @@ class JWt {
     })
   }
   // 检验是否存在token
-  async handleTokenNotFound(ctx, next) {
+  async handleTokenError(ctx, next) {
     await next().catch((err) => {
       // console.log(err.name, err.message)
-      console.log(err)
-      if (err.name === 'UnauthorizedError' && err.message === 'Authentication Error') {
-        ctx.status = 401
-        ctx.body = TokenNotFound
+      console.log(JSON.parse(JSON.stringify(err)))
+      const errMessage = JSON.parse(JSON.stringify(err))
+      //  token是否出现问题
+      if (errMessage.message == 'Authentication Error') {
+        // token无效或者错误
+        if (errMessage['originalError'].name == 'JsonWebTokenError') {
+          ctx.status = 200
+          return ctx.app.emit('error', TokenNotFound, ctx)
+        }
+        // 判断token是否过期
+        if (errMessage['originalError'].name == 'TokenExpiredError') {
+          ctx.status = 200
+          return ctx.app.emit('error', TokenExpired, ctx)
+        }
       } else {
+        // 处理其他错误
         throw new Error(err)
       }
     })

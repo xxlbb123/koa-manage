@@ -2,7 +2,7 @@ const Koa = require('koa')
 const app = new Koa()
 const errHandler = require('./errHandler')
 const { secret } = require('../constant/secretKey')
-const { handleTokenExpired, handleTokenNotFound } = require('../utils/token')
+const { handleTokenError } = require('../utils/token')
 // 导入数据库
 require('../db/index')
 const userRouter = require('../router/users.routes')
@@ -15,7 +15,7 @@ const koajwt = require('koa-jwt')
 // 使用中间件以便于接收post请求参数
 app.use(koaBody())
 // 检验token
-app.use(handleTokenNotFound, handleTokenExpired)
+app.use(handleTokenError)
 // 使用koajwt中间件来检验token
 app.use(
   koajwt({ secret }).unless({
@@ -23,6 +23,7 @@ app.use(
     path: [/^\/user\/login/, /^\/user\/register/]
   })
 )
+
 // 注册路由
 app.use(userRouter.routes(), userRouter.allowedMethods())
 app.use(projectRouter.routes(), projectRouter.allowedMethods())
