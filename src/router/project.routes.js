@@ -79,7 +79,7 @@ router.post('/editProject', async (ctx) => {
   name && (update.name = name)
   description !== undefined && (update.description = description)
   isPrivate !== undefined && (update.isPrivate = isPrivate)
-  if (members.length > 0) {
+  if (members && members.length > 0) {
     members.forEach((member) => {
       member.permission = permissionMap[member.permission]
     })
