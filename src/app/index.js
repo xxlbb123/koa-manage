@@ -3,6 +3,7 @@ const app = new Koa()
 const errHandler = require('./errHandler')
 const { secret } = require('../constant/secretKey')
 const { handleTokenError } = require('../utils/token')
+const cors = require('koa2-cors')
 // 导入数据库
 require('../db/index')
 const userRouter = require('../router/users.routes')
@@ -12,15 +13,16 @@ const interfaceRouter = require('../router/interface.routes')
 const { koaBody } = require('koa-body')
 // 导入koajwt，可以用来校验token
 const koajwt = require('koa-jwt')
+app.use(cors())
 // 使用中间件以便于接收post请求参数
-app.use(koaBody())
+app.use(koaBody({ multipart: true }))
 // 检验token
 app.use(handleTokenError)
 // 使用koajwt中间件来检验token
 app.use(
   koajwt({ secret }).unless({
     // 设置某些接口请求时不做校验
-    path: [/^\/user\/login/, /^\/user\/register/]
+    path: [/^\/user\/login/, /^\/user\/register/, /^\/interface\/importInterface/]
   })
 )
 

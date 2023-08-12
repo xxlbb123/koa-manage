@@ -17,13 +17,11 @@ const InterFaceSchema = new mongoose.Schema(
     },
 
     query: {
-      type: Object,
-      required: true
+      type: Array
     },
 
     body: {
-      type: Object,
-      required: true
+      type: Object
     },
 
     response_data: {

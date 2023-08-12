@@ -5,6 +5,8 @@ const logModel = require('../models/log')
 const interfaceModel = require('../models/interface')
 const { importSwaggerError } = require('../constant/err-type')
 const swaggerParser = require('swagger-parser')
+const fs = require('fs')
+const yaml = require('js-yaml')
 const { getDate } = require('../utils/util')
 
 const router = new Router({ prefix: '/interface' })
@@ -86,33 +88,45 @@ router.post('/createInterface', async (ctx) => {
  *
  */
 router.post('/importInterface', async (ctx) => {
-  // 获取用户的id
-  const { info } = jwt.verify(ctx.request.headers['authorization'].split(' ')[1], secret)
   try {
-    const { swaggerDocument } = ctx.request.body
-    if (!swaggerDocument) {
-      ctx.status = 200
-      return ctx.app.emit('error', importSwaggerError, ctx)
-    }
-    // 解析swagger文档
-    const swagger = await swaggerParser.parse(swaggerDocument)
-    // 处理接口信息并存入数据库中
-    console.log(swagger.paths)
-
-    swagger.paths.forEach(async (pathObj, path) => {
-      Object.keys(pathObj).forEach(async (method) => {
-        const interfaceData = {
-          name: pathObj[method].summary,
-          url: path,
-          http_method: method,
-          query: pathObj[method].parameters,
-          body: pathObj[method].requestBody,
-          response_data: pathObj[method].responses,
-          project: mongoose.Types.ObjectId('your_project_id') // 替换为项目的 ObjectID
-        }
-        const newInterface = new interfaceModel(interfaceData)
-        await newInterface.save()
+    // 获取项目的projectId
+    // const { projectId } = ctx.request.body
+    // 从接口处获取文件
+    const uploadFile = ctx.request.files.swaggerFile
+    // console.log(uploadFile)
+    const yamlContent = fs.readFileSync(uploadFile.filepath, 'utf8')
+    // 转换为JavaScript对象格式
+    const yamlObject = yaml.load(yamlContent)
+    // 所有生成的interfaceId
+    let interfaceId = []
+    Object.keys(yamlObject.paths).forEach((yaml) => {
+      // 这部分是每个方法下面的请求类型，例如post请求,get请求等等
+      // console.log(yaml)
+      Object.keys(yamlObject.paths[yaml]).forEach(async (method) => {
+        // 这就可以具体看到每个接口下每个请求方法下面的接口数据
+        // console.log(yamlObject.paths[yaml][method])
+        const message = yamlObject.paths[yaml][method]
+        console.log(message.name)
+        const newInterface = new interfaceModel({
+          project: '64d7cd357d78d4cd837266bd',
+          url: yaml,
+          name: message.name,
+          body: message.body,
+          response_data: message.responseData,
+          query: message.query,
+          http_method: method
+        })
+        const { _id } = await newInterface.save()
+        interfaceId.push(_id)
       })
+      ctx.body = {
+        code: 200,
+        data: {
+          interfaceId
+        },
+        message: '接口成功创建'
+      }
+      console.log('success')
     })
   } catch (error) {
     throw new Error(error)
