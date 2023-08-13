@@ -8,6 +8,7 @@ const swaggerParser = require('swagger-parser')
 const fs = require('fs')
 const yaml = require('js-yaml')
 const { getDate } = require('../utils/util')
+const app = require('../app')
 
 const router = new Router({ prefix: '/interface' })
 
@@ -89,8 +90,9 @@ router.post('/createInterface', async (ctx) => {
  */
 router.post('/importInterface', async (ctx) => {
   try {
+    const { info } = jwt.verify(ctx.request.headers['authorization'].split(' ')[1], secret)
     // 获取项目的projectId
-    // const { projectId } = ctx.request.body
+    const { projectId } = ctx.request.body
     // 从接口处获取文件
     const uploadFile = ctx.request.files.swaggerFile
     // console.log(uploadFile)
@@ -108,7 +110,7 @@ router.post('/importInterface', async (ctx) => {
         const message = yamlObject.paths[yaml][method]
         console.log(message.name)
         const newInterface = new interfaceModel({
-          project: '64d7cd357d78d4cd837266bd',
+          project: projectId,
           url: yaml,
           name: message.name,
           body: message.body,
@@ -116,9 +118,23 @@ router.post('/importInterface', async (ctx) => {
           query: message.query,
           http_method: method
         })
+        // 获取新建接口id
         const { _id } = await newInterface.save()
         interfaceId.push(_id)
+        const newlog = new logModel({
+          project: projectId,
+          current_version: 0,
+          interfaces: [
+            {
+              interface: _id,
+              update_by: info,
+              update_time: getDate()
+            }
+          ]
+        })
+        await newlog.save()
       })
+
       ctx.body = {
         code: 200,
         data: {
@@ -129,6 +145,7 @@ router.post('/importInterface', async (ctx) => {
       console.log('success')
     })
   } catch (error) {
+    app.ctx.emit('error', importSwaggerError, ctx)
     throw new Error(error)
   }
 })
