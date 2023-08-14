@@ -8,7 +8,7 @@ const swaggerParser = require('swagger-parser')
 const fs = require('fs')
 const yaml = require('js-yaml')
 const { getDate } = require('../utils/util')
-const Koa = require('koa')
+const { mockMap, app, generateMockValue } = require('../utils/mock')
 
 const router = new Router({ prefix: '/interface' })
 
@@ -320,25 +320,20 @@ router.post('/interfaceDetail', async (ctx) => {
 })
 
 
-
-const mockMap = new Map()
-const app = new Koa()
-app.listen(3001, () => {
-  console.log('Mock server has started: http://localhost:3001')
-})
-function generateMockValue(value) {
-  switch (value) {
-    case "number":
-      return Math.random(1)
-      break
-    case "string":
-      return 'a'
-      break
-  }
-}
+/**
+ * @api {post} /interface/mockInterface 接口mock
+ * @apiName 接口mock
+ * @apiGroup 接口管理
+ *
+ * @apiBody {String} interfaceId 接口ID
+ *
+ * @apiSuccess {String} mockUrl mock接口的url
+ *
+ */
 router.post('/mockInterface', async (ctx) => {
   const { interfaceId } = ctx.request.body
 
+  // 1. If an interface has been mocked, then respond the mockUrl and return
   if (mockMap.has(interfaceId)) {
     ctx.body = {
       code: 200,
@@ -350,24 +345,30 @@ router.post('/mockInterface', async (ctx) => {
     return
   }
 
-  const r = new Router()
+  // 2. Define mock interface' s url and response body
   const interface = await interfaceModel.findById(interfaceId)
   
   const url = `/${interfaceId}/${interface.url}`
   const responseBody = async (ctx) => {
-    const i = await interfaceModel.findById(interfaceId)
-    for (const [key, value] of Object.entries(i.response_data)) {
-      i.response_data[key] = generateMockValue(value)
+    const res = {}
+    for (const [key, value] of Object.entries(interface.response_data)) {
+      res[key] = generateMockValue(value)
     }
     ctx.status = 200
-    ctx.body = i.response_data
+    ctx.body = res
   }
 
-  r[interface.http_method.toLowerCase()](url, responseBody)
+  // 3. Create a router and register the mock interface
+  const mockRouter = new Router()
+  mockRouter[interface.http_method.toLowerCase()](url, responseBody)
+  
+  app.use(mockRouter.routes(), mockRouter.allowedMethods())
 
+
+  // 4. Store the mockUrl
   mockMap.set(interfaceId, `/${interfaceId}/${interface.url}`)
-  app.use(r.routes(), r.allowedMethods())
 
+  // 5. End the response
   ctx.body = {
     code: 200,
     data: {
