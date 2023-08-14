@@ -319,7 +319,6 @@ router.post('/interfaceDetail', async (ctx) => {
   }
 })
 
-
 /**
  * @api {post} /interface/mockInterface 接口mock
  * @apiName 接口mock
@@ -347,7 +346,7 @@ router.post('/mockInterface', async (ctx) => {
 
   // 2. Define mock interface' s url and response body
   const interface = await interfaceModel.findById(interfaceId)
-  
+
   const url = `/${interfaceId}/${interface.url}`
   const responseBody = async (ctx) => {
     const res = {}
@@ -361,9 +360,8 @@ router.post('/mockInterface', async (ctx) => {
   // 3. Create a router and register the mock interface
   const mockRouter = new Router()
   mockRouter[interface.http_method.toLowerCase()](url, responseBody)
-  
-  app.use(mockRouter.routes(), mockRouter.allowedMethods())
 
+  app.use(mockRouter.routes(), mockRouter.allowedMethods())
 
   // 4. Store the mockUrl
   mockMap.set(interfaceId, `/${interfaceId}/${interface.url}`)
