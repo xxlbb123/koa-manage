@@ -134,6 +134,9 @@ router.post('/deleteProject', async (ctx) => {
  * @apiGroup 项目管理
  * @apiDescription
  * 通过请求头中的token获得用户ID，返回所有成员列表中包含该用户的项目
+ *
+ * @apiBody {String} [name] 项目名称
+ *
  * @apiSuccess {Object[]} projects 项目列表
  * @apiSuccess {String} projects.name 项目名称
  * @apiSuccess {String} projects.description 项目描述
@@ -148,8 +151,20 @@ router.post('/deleteProject', async (ctx) => {
 router.post('/allProjects', async (ctx) => {
   // 获取到的这个info其实是用户id
   const { info } = jwt.verify(ctx.request.headers['authorization'].split(' ')[1], secret)
+
+  let name
+  ctx.request.body && ({ name } = ctx.request.body)
+
   try {
-    const projects = await projectModel.find({ members: { $elemMatch: { member: info } } })
+    let projects
+    if (name) {
+      projects = await projectModel.find({
+        members: { $elemMatch: { member: info } },
+        name
+      })
+    } else {
+      projects = await projectModel.find({ members: { $elemMatch: { member: info } } })
+    }
     ctx.body = {
       code: 200,
       data: {
