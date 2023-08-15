@@ -22,7 +22,7 @@ app.use(handleTokenError)
 app.use(
   koajwt({ secret }).unless({
     // 设置某些接口请求时不做校验
-    path: [/^\/user\/login/, /^\/user\/register/, /^\/interface\/importInterface/]
+    path: [/^\/user\/login/, /^\/user\/register/]
   })
 )
 

@@ -84,7 +84,8 @@ router.post('/createInterface', async (ctx) => {
  * @api {post} /interface/importInterface 导入接口
  * @apiName 导入接口
  * @apiGroup 接口管理
- *
+ * @apiBody {String} projectId 创建的项目ID
+ * @apiBody {String} swaggerFile 上传的文件
  * @apiSuccess {String} interfaceId 创建的接口ID
  *
  */
@@ -134,16 +135,14 @@ router.post('/importInterface', async (ctx) => {
         })
         await newlog.save()
       })
-
-      ctx.body = {
-        code: 200,
-        data: {
-          interfaceId
-        },
-        message: '接口成功创建'
-      }
-      console.log('success')
     })
+    ctx.body = {
+      code: 200,
+      data: {
+        interfaceId
+      },
+      message: '接口成功创建'
+    }
   } catch (error) {
     app.ctx.emit('error', importSwaggerError, ctx)
     throw new Error(error)
