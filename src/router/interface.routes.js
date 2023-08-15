@@ -9,7 +9,6 @@ const fs = require('fs')
 const yaml = require('js-yaml')
 const { getDate } = require('../utils/util')
 const { mockMap, app, generateMockValue } = require('../utils/mock')
-const app = require('../app')
 
 const router = new Router({ prefix: '/interface' })
 
