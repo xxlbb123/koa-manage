@@ -8,6 +8,7 @@ const swaggerParser = require('swagger-parser')
 const fs = require('fs')
 const yaml = require('js-yaml')
 const { getDate } = require('../utils/util')
+const { mockMap, app, generateMockValue } = require('../utils/mock')
 const app = require('../app')
 
 const router = new Router({ prefix: '/interface' })
@@ -329,6 +330,63 @@ router.post('/interfaceDetail', async (ctx) => {
     code: 200,
     data: {
       interfaceDetail: log
+    },
+    message: ''
+  }
+})
+
+/**
+ * @api {post} /interface/mockInterface 接口mock
+ * @apiName 接口mock
+ * @apiGroup 接口管理
+ *
+ * @apiBody {String} interfaceId 接口ID
+ *
+ * @apiSuccess {String} mockUrl mock接口的url
+ *
+ */
+router.post('/mockInterface', async (ctx) => {
+  const { interfaceId } = ctx.request.body
+
+  // 1. If an interface has been mocked, then respond the mockUrl and return
+  if (mockMap.has(interfaceId)) {
+    ctx.body = {
+      code: 200,
+      data: {
+        mockUrl: mockMap.get(interfaceId)
+      },
+      message: ''
+    }
+    return
+  }
+
+  // 2. Define mock interface' s url and response body
+  const interface = await interfaceModel.findById(interfaceId)
+
+  const url = `/${interfaceId}/${interface.url}`
+  const responseBody = async (ctx) => {
+    const res = {}
+    for (const [key, value] of Object.entries(interface.response_data)) {
+      res[key] = generateMockValue(value)
+    }
+    ctx.status = 200
+    ctx.body = res
+  }
+
+  // 3. Create a router and register the mock interface
+  const mockRouter = new Router()
+  mockRouter[interface.http_method.toLowerCase()](url, responseBody)
+
+  app.use(mockRouter.routes(), mockRouter.allowedMethods())
+
+  // 4. Store the mockUrl
+  mockMap.set(interfaceId, `/${interfaceId}/${interface.url}`)
+
+  // 5. End the response
+  ctx.body = {
+    code: 200,
+    data: {
+      mockUrl: mockMap.get(interfaceId)
     },
     message: ''
   }

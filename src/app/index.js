@@ -9,6 +9,9 @@ require('../db/index')
 const userRouter = require('../router/users.routes')
 const projectRouter = require('../router/project.routes')
 const interfaceRouter = require('../router/interface.routes')
+const koaStatic = require('koa-static')
+const path = require('path')
+
 // 导入koaBody中间件，处理post请求参数
 const { koaBody } = require('koa-body')
 // 导入koajwt，可以用来校验token
@@ -22,9 +25,11 @@ app.use(handleTokenError)
 app.use(
   koajwt({ secret }).unless({
     // 设置某些接口请求时不做校验
-    path: [/^\/user\/login/, /^\/user\/register/]
+    path: [/^\/user\/login/, /^\/user\/register/, /index.html$/, /assets/]
   })
 )
+// doc
+app.use(koaStatic(path.join(__dirname, '../..', '/apidoc')))
 
 // 注册路由
 app.use(userRouter.routes(), userRouter.allowedMethods())
