@@ -9,6 +9,7 @@ require('../db/index')
 const userRouter = require('../router/users.routes')
 const projectRouter = require('../router/project.routes')
 const interfaceRouter = require('../router/interface.routes')
+// 处理静态资源
 const koaStatic = require('koa-static')
 const path = require('path')
 
