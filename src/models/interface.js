@@ -17,7 +17,7 @@ const InterFaceSchema = new mongoose.Schema(
     },
 
     query: {
-      type: Array
+      type: Object
     },
 
     body: {
