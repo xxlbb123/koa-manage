@@ -278,12 +278,29 @@ router.post('/addMember', async (ctx) => {
   try {
     const project = await projectModel.findById(projectId) // 根据项目ID查找项目
     if (!project) {
-      ctx.throw(404, 'Project not found')
+      ctx.status = 404
+      ctx.body = {
+        error: 'Project not found '
+      }
+      return
     }
 
     const user = await userModel.findOne({ username }) // 根据用户名查找用户
     if (!user) {
-      ctx.throw(404, 'User not found')
+      ctx.status = 404
+      ctx.body = {
+        error: 'User not found '
+      }
+      return
+    }
+
+    // 检查是否已经是项目成员
+    if (project.members.some((member) => member.member.toString() === user._id.toString())) {
+      ctx.status = 400
+      ctx.body = {
+        error: 'User is already a member of this project '
+      }
+      return
     }
 
     const member = {
