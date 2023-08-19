@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken')
 const { secret } = require('../constant/secretKey')
 const projectModel = require('../models/project')
 const interfaceModel = require('../models/interface')
+const userModel = require('../models/userSchema')
 const logModel = require('../models/log')
 const { getDate } = require('../utils/util')
 
@@ -242,6 +243,140 @@ router.post('/projectDetail', async (ctx) => {
     }
   } catch (err) {
     throw err
+  }
+})
+
+/**
+ * @api {post} /project/addMember 增加项目成员
+ * @apiName 增加项目成员
+ * @apiGroup 项目管理
+ *
+ * @apiBody {String} username 用户名
+ * @apiBody {String} projectId 项目ID
+ *
+ * @apiSuccess {Object} project 项目详情
+ * @apiSuccess {String} project.name 项目名称
+ * @apiSuccess {String} project.description 项目描述
+ * @apiSuccess {String} project.created_by 创建人ID
+ * @apiSuccess {Date} project.created_time 创建时间
+ * @apiSuccess {Object[]} project.members 项目成员列表
+ * @apiSuccess {String} project.members.member 项目成员ID
+ * @apiSuccess {Number=0,1,2} project.members.permission 项目成员权限。0:管理 1：读写 2：只读
+ * @apiSuccess {Boolean} project.isPrivate 是否是私有项目
+ * @apiSuccess {Object[]} project.interface 接口列表
+ * @apiSuccess {String} project.interface.name 接口名称
+ * @apiSuccess {String} project.interface.url 接口URL
+ * @apiSuccess {String} project.interface.http_method 接口方法
+ * @apiSuccess {Object} project.interface.query 请求参数格式
+ * @apiSuccess {Object} project.interface.body 请求体格式
+ * @apiSuccess {Object} project.interface.responseData 返回数据格式
+ *
+ */
+router.post('/addMember', async (ctx) => {
+  const { username, projectId } = ctx.request.body
+
+  try {
+    const project = await projectModel.findById(projectId) // 根据项目ID查找项目
+    if (!project) {
+      ctx.throw(404, 'Project not found')
+    }
+
+    const user = await userModel.findOne({ username }) // 根据用户名查找用户
+    if (!user) {
+      ctx.throw(404, 'User not found')
+    }
+
+    const member = {
+      member: user._id,
+      permission: 2
+    }
+
+    project.members.push(member) // 将用户添加为项目成员
+    await project.save() // 保存项目
+
+    ctx.body = {
+      code: 200,
+      data: {
+        project
+      },
+      message: ''
+    }
+  } catch (error) {
+    ctx.throw(500, error.message)
+  }
+})
+/**
+ * @api {post} /project/allPublicProjects 查看公有项目列表
+ * @apiName 查看公有项目列表
+ * @apiGroup 项目管理
+ *
+ * @apiSuccess {Object[]} projects 项目列表
+ * @apiSuccess {String} projects.name 项目名称
+ * @apiSuccess {String} projects.description 项目描述
+ * @apiSuccess {String} projects.created_by 创建人ID
+ * @apiSuccess {Date} projects.created_time 创建时间
+ * @apiSuccess {Object[]} projects.members 项目成员列表
+ * @apiSuccess {String} projects.members.member 项目成员ID
+ * @apiSuccess {Number=0,1,2} projects.members.permission 项目成员权限。0:管理 1：读写 2：只读
+ * @apiSuccess {Boolean} projects.isPrivate 是否是私有项目
+ *
+ */
+router.post('/allPublicProjects', async (ctx) => {
+  try {
+    const publicProjects = await projectModel.find({ isPrivate: false })
+    ctx.body = {
+      code: 200,
+      data: {
+        publicProjects
+      },
+      message: ''
+    }
+  } catch (error) {
+    ctx.status = 500
+    ctx.body = { error: 'Failed to fetch public projects' }
+  }
+})
+
+/**
+ * @api {post} /project/searchProject 根据项目名称查看项目详情
+ * @apiName 根据项目名称查看项目详情
+ * @apiGroup 项目管理
+ *
+ * @apiBody {String} projectName 项目名称
+ *
+ * @apiSuccess {Object} project 项目详情
+ * @apiSuccess {String} project.name 项目名称
+ * @apiSuccess {String} project.description 项目描述
+ * @apiSuccess {String} project.created_by 创建人ID
+ * @apiSuccess {Date} project.created_time 创建时间
+ * @apiSuccess {Object[]} project.members 项目成员列表
+ * @apiSuccess {String} project.members.member 项目成员ID
+ * @apiSuccess {Number=0,1,2} project.members.permission 项目成员权限。0:管理 1：读写 2：只读
+ * @apiSuccess {Boolean} project.isPrivate 是否是私有项目
+ * @apiSuccess {Object[]} project.interface 接口列表
+ * @apiSuccess {String} project.interface.name 接口名称
+ * @apiSuccess {String} project.interface.url 接口URL
+ * @apiSuccess {String} project.interface.http_method 接口方法
+ * @apiSuccess {Object} project.interface.query 请求参数格式
+ * @apiSuccess {Object} project.interface.body 请求体格式
+ * @apiSuccess {Object} project.interface.responseData 返回数据格式
+ *
+ */
+router.post('/searchProject', async (ctx) => {
+  const { projectName } = ctx.request.body
+
+  try {
+    const projects = await projectModel.find({ name: projectName })
+    ctx.body = {
+      code: 200,
+      data: {
+        projects
+      },
+      message: ''
+    }
+  } catch (error) {
+    ctx.status = 500
+    ctx.body = { error: 'Failed to search projects' }
   }
 })
 
