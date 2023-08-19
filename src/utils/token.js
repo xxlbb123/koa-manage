@@ -36,12 +36,12 @@ class JWt {
       //  token是否出现问题
       if (errMessage.message == 'Authentication Error') {
         // token无效或者错误
-        if (errMessage['originalError'].name == 'JsonWebTokenError') {
+        if (errMessage['originalError']['name'] == 'JsonWebTokenError') {
           ctx.status = 200
           return ctx.app.emit('error', TokenNotFound, ctx)
         }
         // 判断token是否过期
-        if (errMessage['originalError'].name == 'TokenExpiredError') {
+        if (errMessage['originalError']['name'] == 'TokenExpiredError') {
           ctx.status = 200
           return ctx.app.emit('error', TokenExpired, ctx)
         }
