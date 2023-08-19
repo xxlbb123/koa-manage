@@ -324,15 +324,16 @@ router.post('/addMember', async (ctx) => {
 router.post('/allPublicProjects', async (ctx) => {
   try {
     const publicProjects = await projectModel.find({ isPrivate: false })
+    console.log(publicProjects, 'public')
     ctx.body = {
       code: 200,
       data: {
         publicProjects
       },
-      message: ''
+      message: 'sadad'
     }
   } catch (error) {
-    ctx.status = 500
+    ctx.status = 200
     ctx.body = { error: 'Failed to fetch public projects' }
   }
 })
