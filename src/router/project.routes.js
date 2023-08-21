@@ -68,27 +68,48 @@ router.post('/createProject', async (ctx) => {
  */
 router.post('/editProject', async (ctx) => {
   const body = ctx.request.body
-  const { projectId, name, description, isPrivate, members } = body
+  const { projectId, name, description, isPrivate, members, userId, permission } = body
 
   const permissionMap = {
     read: 2,
     write: 1,
     admin: 0
   }
-  const update = {}
-
-  name && (update.name = name)
-  description !== undefined && (update.description = description)
-  isPrivate !== undefined && (update.isPrivate = isPrivate)
-  if (members && members.length > 0) {
-    members.forEach((member) => {
-      member.permission = permissionMap[member.permission]
-    })
-    update.members = members
-  }
-
   try {
-    await projectModel.findByIdAndUpdate(projectId, update)
+    const project = await projectModel.findById(projectId)
+
+    if (!project) {
+      ctx.status = 404
+      ctx.body = {
+        error: 'Project not found'
+      }
+      return
+    }
+
+    // 更新项目属性
+    name && (project.name = name)
+    description !== undefined && (project.description = description)
+    isPrivate !== undefined && (project.isPrivate = isPrivate)
+
+    if (members && members.length > 0) {
+      // 更新成员权限
+      members.forEach((member) => {
+        const existingMember = project.members.find((m) => m.member.toString() === member.userId)
+        console.log(existingMember)
+        if (existingMember) {
+          existingMember.permission = permissionMap[member.permission]
+        }
+      })
+    }
+    if (userId) {
+      //不传入member参数
+      const existingMember = project.members.find((m) => m.member.toString() === userId)
+      existingMember.permission = permission
+    }
+
+    // 保存项目
+    await project.save()
+
     ctx.body = {
       code: 200,
       data: undefined,
