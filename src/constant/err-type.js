@@ -7,6 +7,10 @@ module.exports = {
     msg: 'token错误或未携带token',
     code: 401
   },
+  AuthenticationError: {
+    msg: '身份验证错误',
+    code: 401
+  },
   UserFormatError: {
     msg: '用户名或者密码为空',
     code: 510

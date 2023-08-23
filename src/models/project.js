@@ -29,6 +29,11 @@ const ProjectSchema = new mongoose.Schema({
         type: Number,
         required: true,
         default: 2
+      },
+      // 用户名称
+      username: {
+        type: String,
+        required: true
       }
     }
   ],

@@ -25,6 +25,8 @@ router.post('/createProject', async (ctx) => {
   const body = ctx.request.body
   const { name, description, isPrivate } = body
   const { info } = jwt.verify(ctx.request.headers['authorization'].split(' ')[1], secret)
+  // 获取创建项目用户的用户名称
+  const { username } = await userModel.findById(info)
   const newProject = new projectModel({
     name,
     description,
@@ -32,7 +34,8 @@ router.post('/createProject', async (ctx) => {
     members: [
       {
         member: info,
-        permission: 0
+        permission: 0,
+        username
       }
     ],
     isPrivate,
@@ -48,7 +51,7 @@ router.post('/createProject', async (ctx) => {
       message: 'Project created successfully.'
     }
   } catch (err) {
-    throw err
+    throw new Error(err)
   }
 })
 
@@ -69,17 +72,17 @@ router.post('/createProject', async (ctx) => {
 router.post('/editProject', async (ctx) => {
   const body = ctx.request.body
   const { projectId, name, description, isPrivate, members, userId, permission } = body
-
+  // 权限
   const permissionMap = {
     read: 2,
     write: 1,
     admin: 0
   }
   try {
+    // 查找到项目
     const project = await projectModel.findById(projectId)
-
     if (!project) {
-      ctx.status = 404
+      ctx.status = 200
       ctx.body = {
         error: 'Project not found'
       }
@@ -90,7 +93,7 @@ router.post('/editProject', async (ctx) => {
     name && (project.name = name)
     description !== undefined && (project.description = description)
     isPrivate !== undefined && (project.isPrivate = isPrivate)
-
+    // 传递的要修改的members数组
     if (members && members.length > 0) {
       // 更新成员权限
       members.forEach((member) => {
@@ -112,7 +115,6 @@ router.post('/editProject', async (ctx) => {
 
     ctx.body = {
       code: 200,
-      data: undefined,
       message: 'Project edited successfully.'
     }
   } catch (err) {
@@ -266,7 +268,63 @@ router.post('/projectDetail', async (ctx) => {
     throw err
   }
 })
+/**
+ * @api {post} /project/deleteMember 删除项目成员
+ * @apiName 删除项目成员
+ * @apiGroup 项目管理
+ *
+ * @apiBody {String} username 用户名
+ * @apiBody {String} projectId 项目id
+ * @apiSuccess {String} msg  返回消息
+ *
+ */
+router.post('/deleteMember', async (ctx) => {
+  // 获取当前登录的用户id
+  const { info } = jwt.verify(ctx.request.headers['authorization'].split(' ')[1], secret)
+  const { projectId, username } = ctx.request.body
 
+  try {
+    const project = await projectModel.findById(projectId)
+
+    if (!project) {
+      ctx.status = 200
+      ctx.body = {
+        code: 404,
+        msg: '项目未找到'
+      }
+      return
+    }
+    // 找到项目的创始者
+    const originalUser = project.members[0]
+    if (originalUser.username === username) {
+      ctx.status = 200
+      ctx.body = {
+        code: 500,
+        msg: '您是项目创始者,不能被删除'
+      }
+      return
+    }
+    // 判断是否有这个成员存在
+    const memberIndex = project.members.findIndex((item) => item.username === username)
+    if (memberIndex === -1) {
+      ctx.status = 200
+      ctx.body = {
+        code: 404,
+        msg: '未找到项目成员'
+      }
+      return
+    }
+    // 删除这个成员
+    project.members.splice(memberIndex, 1)
+    await project.save()
+    ctx.body = {
+      code: 200,
+      msg: '成功删除'
+    }
+  } catch (error) {
+    throw new Error(error)
+  }
+})
 /**
  * @api {post} /project/addMember 增加项目成员
  * @apiName 增加项目成员
@@ -301,30 +359,31 @@ router.post('/addMember', async (ctx) => {
     if (!project) {
       ctx.status = 404
       ctx.body = {
-        error: 'Project not found '
+        msg: 'Project not found '
       }
       return
     }
 
     const user = await userModel.findOne({ username }) // 根据用户名查找用户
     if (!user) {
-      ctx.status = 404
+      ctx.status = 200
       ctx.body = {
-        error: 'User not found '
+        msg: 'User not found '
       }
       return
     }
 
     // 检查是否已经是项目成员
     if (project.members.some((member) => member.member.toString() === user._id.toString())) {
-      ctx.status = 400
+      ctx.status = 200
       ctx.body = {
-        error: 'User is already a member of this project '
+        msg: 'User is already a member of this project '
       }
       return
     }
 
     const member = {
+      username: user.username,
       member: user._id,
       permission: 2
     }
@@ -340,7 +399,7 @@ router.post('/addMember', async (ctx) => {
       message: ''
     }
   } catch (error) {
-    ctx.throw(500, error.message)
+    throw new Error(error)
   }
 })
 /**
@@ -414,7 +473,7 @@ router.post('/searchProject', async (ctx) => {
       message: ''
     }
   } catch (error) {
-    ctx.status = 500
+    ctx.status = 200
     ctx.body = { error: 'Failed to search projects' }
   }
 })

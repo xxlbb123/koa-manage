@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken')
-const { TokenExpired, TokenNotFound } = require('../constant/err-type')
+const { TokenExpired, TokenNotFound, AuthenticationError } = require('../constant/err-type')
 // 导入token密钥
 const { secret } = require('../constant/secretKey')
 const userModel = require('../models/userSchema')
@@ -30,21 +30,24 @@ class JWt {
   // 检验是否存在token
   async handleTokenError(ctx, next) {
     await next().catch((err) => {
+      console.log(err)
       // console.log(err.name, err.message)
       console.log(JSON.parse(JSON.stringify(err)))
       const errMessage = JSON.parse(JSON.stringify(err))
       //  token是否出现问题
       if (errMessage.message == 'Authentication Error') {
-        // token无效或者错误
-        if (errMessage['originalError']['name'] == 'JsonWebTokenError') {
-          ctx.status = 200
-          return ctx.app.emit('error', TokenNotFound, ctx)
-        }
-        // 判断token是否过期
-        if (errMessage['originalError']['name'] == 'TokenExpiredError') {
-          ctx.status = 200
-          return ctx.app.emit('error', TokenExpired, ctx)
-        }
+        ctx.status = 200
+        return ctx.app.emit('error', AuthenticationError, ctx)
+      }
+      // token无效或者错误
+      if (errMessage['originalError']['name'] === 'JsonWebTokenError') {
+        ctx.status = 200
+        return ctx.app.emit('error', TokenNotFound, ctx)
+      }
+      // 判断token是否过期
+      if (errMessage['originalError']['name'] === 'TokenExpiredError') {
+        ctx.status = 200
+        return ctx.app.emit('error', TokenExpired, ctx)
       } else {
         // 处理其他错误
         throw new Error(err)
