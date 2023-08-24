@@ -1,5 +1,5 @@
 const Router = require('koa-router')
-const { handleValidatorUser, handleRegisterUser, handleReturnUserInfo } = require('../middleware/user.middleware')
+const { handleValidatorUser, handleRegisterUser, handleReturnUserInfo, handleReturnAllUserInfo } = require('../middleware/user.middleware')
 const router = new Router()
 router.prefix('/user')
 // 登录路由
@@ -32,4 +32,12 @@ router.post('/register', handleRegisterUser)
  *
  */
 router.get('/userInfo', handleReturnUserInfo)
+/**
+ * @api {get} /user/alluserInfo 所有用户信息接口
+ * @apiGroup 用户相关
+ * @apiSuccess {Object[]} 用户列表
+ * @apiSuccess {string}  id 用户id
+ * @apiSuccess {string}  username 用户名称
+ */
+router.get('/alluserInfo', handleReturnAllUserInfo)
 module.exports = router

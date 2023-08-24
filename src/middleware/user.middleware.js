@@ -78,8 +78,37 @@ const handleReturnUserInfo = async (ctx, next) => {
     }
   }
 }
+// 获取所有用户的信息
+const handleReturnAllUserInfo = async (ctx, next) => {
+  try {
+    const user = await userModel.aggregate([
+      {
+        $project: {
+          id: '$_id', // 重命名 _id 为 id
+          _id: 0, //不将原始的_id返回
+          username: 1 // 保留 username 字段
+        }
+      }
+    ])
+    if (!user) {
+      ctx.body = {
+        code: 500,
+        msg: '没有用户'
+      }
+    }
+    // 对数据进行处理
+    ctx.body = {
+      code: 200,
+      data: user,
+      msg: '返回的所有用户'
+    }
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 module.exports = {
   handleValidatorUser,
   handleRegisterUser,
-  handleReturnUserInfo
+  handleReturnUserInfo,
+  handleReturnAllUserInfo
 }
