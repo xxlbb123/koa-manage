@@ -8,6 +8,7 @@ const fs = require('fs')
 const yaml = require('js-yaml')
 const { getDate } = require('../utils/util')
 const { mockMap, app, generateMockValue } = require('../utils/mock')
+const { MOCK_DEV, SERVER } = require('../config/config.default')
 
 const router = new Router({ prefix: '/interface' })
 
@@ -384,7 +385,7 @@ router.post('/mockInterface', async (ctx) => {
   ctx.body = {
     code: 200,
     data: {
-      mockUrl: mockMap.get(interfaceId)
+      mockUrl: SERVER + ':' + MOCK_DEV + mockMap.get(interfaceId)
     },
     message: ''
   }
