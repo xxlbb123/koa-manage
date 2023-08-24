@@ -135,15 +135,6 @@ router.post('/importInterface', async (ctx) => {
         })
         await newlog.save()
       })
-
-      ctx.body = {
-        code: 200,
-        data: {
-          interfaceId
-        },
-        message: '接口成功创建'
-      }
-      console.log('success')
     })
     ctx.body = {
       code: 200,
