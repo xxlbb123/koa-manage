@@ -1,5 +1,8 @@
+const path = require('path')
+// 构建 .env文件的绝对路径
+const envPath = path.resolve(__dirname, '..', '..', '.env')
 const dotenv = require('dotenv')
-const result = dotenv.config()
+const result = dotenv.config({ path: envPath })
 if (result.error) {
   throw result.error
 }

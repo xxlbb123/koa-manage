@@ -5,7 +5,7 @@ const { secret } = require('../constant/secretKey')
 const { handleTokenError } = require('../utils/token')
 const cors = require('koa2-cors')
 // 导入数据库
-require('../db/index')
+require('../db/index.js')
 const userRouter = require('../router/users.routes')
 const projectRouter = require('../router/project.routes')
 const interfaceRouter = require('../router/interface.routes')

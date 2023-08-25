@@ -56,7 +56,7 @@ const handleRegisterUser = async (ctx, next) => {
     // 将注册的用户添加到数据库中
     const newUser = new userModel({ username, password: hashedPassword })
     await newUser.save()
-    ctx.status = 201 //创建用户
+    ctx.status = 200 //创建用户
     ctx.body = {
       code: 200,
       msg: '注册成功'
