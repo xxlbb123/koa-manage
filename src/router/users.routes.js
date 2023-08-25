@@ -35,7 +35,7 @@ router.get('/userInfo', handleReturnUserInfo)
 /**
  * @api {get} /user/alluserInfo 所有用户信息接口
  * @apiGroup 用户相关
- * @apiSuccess {Object[]} 用户列表
+ * @apiSuccess {Object[]} data 用户列表
  * @apiSuccess {string}  id 用户id
  * @apiSuccess {string}  username 用户名称
  */
