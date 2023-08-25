@@ -352,7 +352,7 @@ router.post('/mockInterface', async (ctx) => {
     ctx.body = {
       code: 200,
       data: {
-        mockUrl: mockMap.get(interfaceId)
+        mockUrl: SERVER + ':' + MOCK_DEV + mockMap.get(interfaceId)
       },
       message: ''
     }
