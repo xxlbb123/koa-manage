@@ -36,6 +36,7 @@ function generateMockValue(el) {
     })
     return res
   } else if (value === '') {
+    // frontend decides it maybe empty
     return ''
   } else {
     throw Error('Unexpected value.')
