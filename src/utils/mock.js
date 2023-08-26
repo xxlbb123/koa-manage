@@ -12,7 +12,8 @@ app.listen(MOCK_DEV, () => {
 })
 
 // Process type to be random value used to mock
-function generateMockValue(value) {
+function generateMockValue(el) {
+  const value = el.format
   if (value === 'integer') {
     return Mock.Random.integer()
   } else if (value === 'string') {
@@ -21,12 +22,17 @@ function generateMockValue(value) {
     return Mock.Random.boolean()
   } else if (value === 'number') {
     return Mock.Random.float()
-  } else if (Array.isArray(value)) {
-    return value.map((v) => generateMockValue(v))
-  } else if (typeof value === 'object') {
+  } else if (value === 'null') {
+    return null
+  } else if (value === 'array') {
+    if (el.node.length === 0) {
+      return []
+    }
+    return value.node.map((v) => generateMockValue(v))
+  } else if (value === 'object' || value === 'any') {
     const res = {}
-    Object.entries(value).forEach(([k, v]) => {
-      res[k] = generateMockValue(v)
+    el.node.forEach((v) => {
+      res[v.name] = generateMockValue(v)
     })
     return res
   } else {
