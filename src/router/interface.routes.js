@@ -76,7 +76,7 @@ router.post('/createInterface', async (ctx) => {
       message: 'Interface created successfully.'
     }
   } catch (err) {
-    throw err
+    throw new Error(err)
   }
 })
 
@@ -96,12 +96,19 @@ router.post('/importInterface', async (ctx) => {
     const { projectId } = ctx.request.body
     // 从接口处获取文件
     const uploadFile = ctx.request.files.swaggerFile
-    // console.log(uploadFile)
+    if (!uploadFile) {
+      ctx.body = {
+        code: 500,
+        msg: '请先上传文件'
+      }
+    }
+    console.log(uploadFile.filepath, 'uploadFile')
     const yamlContent = fs.readFileSync(uploadFile.filepath, 'utf8')
+    console.log(yamlContent, 'sawrxfg')
     // 转换为JavaScript对象格式
     const yamlObject = yaml.load(yamlContent)
+    console.log(yamlObject, 'yamlObject')
     // 所有生成的interfaceId
-    let interfaceId = []
     Object.keys(yamlObject.paths).forEach((yaml) => {
       // 这部分是每个方法下面的请求类型，例如post请求,get请求等等
       // console.log(yaml)
@@ -121,7 +128,6 @@ router.post('/importInterface', async (ctx) => {
         })
         // 获取新建接口id
         const { _id } = await newInterface.save()
-        interfaceId.push(_id)
         const newlog = new logModel({
           project: projectId,
           current_version: 0,
@@ -138,13 +144,10 @@ router.post('/importInterface', async (ctx) => {
     })
     ctx.body = {
       code: 200,
-      data: {
-        interfaceId
-      },
-      message: '接口成功创建'
+      msg: '接口成功创建'
     }
   } catch (error) {
-    app.ctx.emit('error', importSwaggerError, ctx)
+    console.log(importSwaggerError)
     throw new Error(error)
   }
 })
@@ -210,7 +213,7 @@ router.post('/editInterface', async (ctx) => {
       message: 'Interface edited successfully.'
     }
   } catch (err) {
-    throw err
+    throw new Error(err)
   }
 })
 
@@ -233,7 +236,7 @@ router.post('/deleteInterface', async (ctx) => {
       message: 'Interface deleted successfully.'
     }
   } catch (err) {
-    throw err
+    throw new Error(err)
   }
 })
 
@@ -290,7 +293,7 @@ router.post('/allInterface', async (ctx) => {
       message: ''
     }
   } catch (err) {
-    throw err
+    throw new Error(err)
   }
 })
 
@@ -318,19 +321,22 @@ router.post('/allInterface', async (ctx) => {
 router.post('/interfaceDetail', async (ctx) => {
   const body = ctx.request.body
   const { interfaceId } = body
+  try {
+    const log = await logModel.findOne({ interfaces: { $elemMatch: { interface: interfaceId } } })
+    const promise = log['_doc'].interfaces.map(async (i) => {
+      i.interface = await interfaceModel.findById(i.interface)
+    })
+    await Promise.all(promise)
 
-  const log = await logModel.findOne({ interfaces: { $elemMatch: { interface: interfaceId } } })
-  const promise = log['_doc'].interfaces.map(async (i) => {
-    i.interface = await interfaceModel.findById(i.interface)
-  })
-  await Promise.all(promise)
-
-  ctx.body = {
-    code: 200,
-    data: {
-      interfaceDetail: log
-    },
-    message: ''
+    ctx.body = {
+      code: 200,
+      data: {
+        interfaceDetail: log
+      },
+      message: ''
+    }
+  } catch (error) {
+    throw new Error(err)
   }
 })
 
