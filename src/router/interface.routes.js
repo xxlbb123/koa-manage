@@ -402,8 +402,8 @@ router.post('/mockInterface', async (ctx) => {
     const url = `/${interfaceId}/${interface.url}`
     const responseBody = async (ctx) => {
       const res = {}
-      for (const [key, value] of Object.entries(interface.response_data)) {
-        res[key] = generateMockValue(value)
+      for (const el of interface.response_data) {
+        res[el.name] = generateMockValue(el)
       }
       ctx.status = 200
       ctx.body = res
