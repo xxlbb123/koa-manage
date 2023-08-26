@@ -51,6 +51,11 @@ router.post('/createProject', async (ctx) => {
       message: 'Project created successfully.'
     }
   } catch (err) {
+    ctx.status = 200
+    ctx.body = {
+      code: 500,
+      msg: '项目删除失败'
+    }
     throw new Error(err)
   }
 })
@@ -118,7 +123,12 @@ router.post('/editProject', async (ctx) => {
       message: 'Project edited successfully.'
     }
   } catch (err) {
-    throw err
+    ctx.status = 200
+    ctx.body = {
+      code: 500,
+      msg: '项目删除失败'
+    }
+    throw new Error(err)
   }
 })
 
@@ -136,7 +146,14 @@ router.post('/deleteProject', async (ctx) => {
 
   try {
     // 首先删除相关项目
-    await projectModel.findByIdAndDelete(projectId)
+    const project = await projectModel.findByIdAndDelete({ _id: projectId })
+    if (!project) {
+      ctx.body = {
+        code: 500,
+        msg: '未找到该项目'
+      }
+      return
+    }
     // 查找到相关的logs,返回一个数组
     await logModel.deleteMany({ project: projectId })
     //  删除与这个项目相关的接口
@@ -144,11 +161,15 @@ router.post('/deleteProject', async (ctx) => {
     // 删除相关的接口
     ctx.body = {
       code: 200,
-      data: undefined,
-      message: 'Project deleted successfully.'
+      msg: '项目已经删除'
     }
   } catch (err) {
-    throw err
+    ctx.status = 200
+    ctx.body = {
+      code: 500,
+      msg: '项目删除失败'
+    }
+    throw new Error(err)
   }
 })
 
@@ -194,10 +215,15 @@ router.post('/allProjects', async (ctx) => {
       data: {
         projects
       },
-      message: 'Projects searched successfully.'
+      message: '项目搜索结果'
     }
   } catch (err) {
-    throw err
+    ctx.status = 200
+    ctx.body = {
+      code: 500,
+      msg: '获取所有项目失败'
+    }
+    throw new Error(err)
   }
 })
 
@@ -265,7 +291,12 @@ router.post('/projectDetail', async (ctx) => {
       message: ''
     }
   } catch (err) {
-    throw err
+    ctx.status = 200
+    ctx.body = {
+      code: 500,
+      msg: '查看项目详情失败'
+    }
+    throw new Error(err)
   }
 })
 /**
@@ -289,7 +320,7 @@ router.post('/deleteMember', async (ctx) => {
     if (!project) {
       ctx.status = 200
       ctx.body = {
-        code: 404,
+        code: 500,
         msg: '项目未找到'
       }
       return
@@ -309,7 +340,7 @@ router.post('/deleteMember', async (ctx) => {
     if (memberIndex === -1) {
       ctx.status = 200
       ctx.body = {
-        code: 404,
+        code: 500,
         msg: '未找到项目成员'
       }
       return
@@ -322,6 +353,11 @@ router.post('/deleteMember', async (ctx) => {
       msg: '成功删除'
     }
   } catch (error) {
+    ctx.status = 200
+    ctx.body = {
+      code: 500,
+      msg: '删除成员失败'
+    }
     throw new Error(error)
   }
 })
@@ -357,9 +393,10 @@ router.post('/addMember', async (ctx) => {
   try {
     const project = await projectModel.findById(projectId) // 根据项目ID查找项目
     if (!project) {
-      ctx.status = 404
+      ctx.status = 200
       ctx.body = {
-        msg: 'Project not found '
+        code: 500,
+        msg: '项目未找到 '
       }
       return
     }
@@ -368,7 +405,8 @@ router.post('/addMember', async (ctx) => {
     if (!user) {
       ctx.status = 200
       ctx.body = {
-        msg: 'User not found '
+        code: 500,
+        msg: '未找到该用户'
       }
       return
     }
@@ -377,7 +415,8 @@ router.post('/addMember', async (ctx) => {
     if (project.members.some((member) => member.member.toString() === user._id.toString())) {
       ctx.status = 200
       ctx.body = {
-        msg: 'User is already a member of this project '
+        code: 500,
+        msg: '用户已经在这个项目中了，不能重复添加'
       }
       return
     }
@@ -399,6 +438,11 @@ router.post('/addMember', async (ctx) => {
       message: ''
     }
   } catch (error) {
+    ctx.status = 200
+    ctx.body = {
+      code: 500,
+      msg: '添加用户失败'
+    }
     throw new Error(error)
   }
 })
@@ -431,7 +475,11 @@ router.post('/allPublicProjects', async (ctx) => {
     }
   } catch (error) {
     ctx.status = 200
-    ctx.body = { error: 'Failed to fetch public projects' }
+    ctx.body = {
+      code: 500,
+      msg: 'Failed to fetch public projects'
+    }
+    throw new Error(error)
   }
 })
 
@@ -474,7 +522,8 @@ router.post('/searchProject', async (ctx) => {
     }
   } catch (error) {
     ctx.status = 200
-    ctx.body = { error: 'Failed to search projects' }
+    ctx.body = { code: 500, msg: 'Failed to search projects' }
+    throw new Error(error)
   }
 })
 

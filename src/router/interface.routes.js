@@ -9,6 +9,7 @@ const yaml = require('js-yaml')
 const { getDate } = require('../utils/util')
 const { mockMap, app, generateMockValue } = require('../utils/mock')
 const { MOCK_DEV, SERVER } = require('../config/config.default')
+const projectModel = require('../models/project')
 
 const router = new Router({ prefix: '/interface' })
 
@@ -101,6 +102,15 @@ router.post('/importInterface', async (ctx) => {
         code: 500,
         msg: '请先上传文件'
       }
+      return
+    }
+    const Project = await projectModel.findById(projectId)
+    if (!Project) {
+      ctx.body = {
+        code: 500,
+        msg: '未找到该项目'
+      }
+      return
     }
     console.log(uploadFile.filepath, 'uploadFile')
     const yamlContent = fs.readFileSync(uploadFile.filepath, 'utf8')
@@ -147,7 +157,8 @@ router.post('/importInterface', async (ctx) => {
       msg: '接口成功创建'
     }
   } catch (error) {
-    console.log(importSwaggerError)
+    ctx.status = 200
+    ctx.body = importSwaggerError
     throw new Error(error)
   }
 })
@@ -213,6 +224,11 @@ router.post('/editInterface', async (ctx) => {
       message: 'Interface edited successfully.'
     }
   } catch (err) {
+    ctx.status = 200
+    ctx.body = {
+      code: 500,
+      msg: '项目编辑失败'
+    }
     throw new Error(err)
   }
 })
@@ -236,6 +252,11 @@ router.post('/deleteInterface', async (ctx) => {
       message: 'Interface deleted successfully.'
     }
   } catch (err) {
+    ctx.status = 200
+    ctx.body = {
+      code: 500,
+      msg: '项目删除失败'
+    }
     throw new Error(err)
   }
 })
@@ -293,6 +314,11 @@ router.post('/allInterface', async (ctx) => {
       message: ''
     }
   } catch (err) {
+    ctx.status = 200
+    ctx.body = {
+      code: 500,
+      msg: '获取所有接口失败'
+    }
     throw new Error(err)
   }
 })
@@ -336,6 +362,11 @@ router.post('/interfaceDetail', async (ctx) => {
       message: ''
     }
   } catch (error) {
+    ctx.status = 200
+    ctx.body = {
+      code: 500,
+      msg: '获取接口详情失败'
+    }
     throw new Error(err)
   }
 })
@@ -352,9 +383,42 @@ router.post('/interfaceDetail', async (ctx) => {
  */
 router.post('/mockInterface', async (ctx) => {
   const { interfaceId } = ctx.request.body
+  try {
+    // 1. If an interface has been mocked, then respond the mockUrl and return
+    if (mockMap.has(interfaceId)) {
+      ctx.body = {
+        code: 200,
+        data: {
+          mockUrl: SERVER + ':' + MOCK_DEV + mockMap.get(interfaceId)
+        },
+        message: ''
+      }
+      return
+    }
 
-  // 1. If an interface has been mocked, then respond the mockUrl and return
-  if (mockMap.has(interfaceId)) {
+    // 2. Define mock interface' s url and response body
+    const interface = await interfaceModel.findById(interfaceId)
+
+    const url = `/${interfaceId}/${interface.url}`
+    const responseBody = async (ctx) => {
+      const res = {}
+      for (const [key, value] of Object.entries(interface.response_data)) {
+        res[key] = generateMockValue(value)
+      }
+      ctx.status = 200
+      ctx.body = res
+    }
+
+    // 3. Create a router and register the mock interface
+    const mockRouter = new Router()
+    mockRouter[interface.http_method.toLowerCase()](url, responseBody)
+
+    app.use(mockRouter.routes(), mockRouter.allowedMethods())
+
+    // 4. Store the mockUrl
+    mockMap.set(interfaceId, `/${interfaceId}/${interface.url}`)
+
+    // 5. End the response
     ctx.body = {
       code: 200,
       data: {
@@ -362,38 +426,13 @@ router.post('/mockInterface', async (ctx) => {
       },
       message: ''
     }
-    return
-  }
-
-  // 2. Define mock interface' s url and response body
-  const interface = await interfaceModel.findById(interfaceId)
-
-  const url = `/${interfaceId}/${interface.url}`
-  const responseBody = async (ctx) => {
-    const res = {}
-    for (const [key, value] of Object.entries(interface.response_data)) {
-      res[key] = generateMockValue(value)
-    }
+  } catch (error) {
     ctx.status = 200
-    ctx.body = res
-  }
-
-  // 3. Create a router and register the mock interface
-  const mockRouter = new Router()
-  mockRouter[interface.http_method.toLowerCase()](url, responseBody)
-
-  app.use(mockRouter.routes(), mockRouter.allowedMethods())
-
-  // 4. Store the mockUrl
-  mockMap.set(interfaceId, `/${interfaceId}/${interface.url}`)
-
-  // 5. End the response
-  ctx.body = {
-    code: 200,
-    data: {
-      mockUrl: SERVER + ':' + MOCK_DEV + mockMap.get(interfaceId)
-    },
-    message: ''
+    ctx.body = {
+      code: 500,
+      msg: 'mock接口失败'
+    }
+    throw new Error(error)
   }
 })
 

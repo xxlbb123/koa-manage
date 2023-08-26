@@ -35,6 +35,11 @@ const handleValidatorUser = async (ctx, next) => {
       }
     }
   } catch (error) {
+    ctx.status = 200
+    ctx.body = {
+      code: 500,
+      msg: '登录失败'
+    }
     throw new Error(error)
   }
 }
@@ -62,20 +67,34 @@ const handleRegisterUser = async (ctx, next) => {
       msg: '注册成功'
     }
   } catch (error) {
+    ctx.status = 200
+    ctx.body = {
+      code: 500,
+      msg: '注册失败'
+    }
     throw new Error(error)
   }
 }
 // 获取用户信息的中间件
 const handleReturnUserInfo = async (ctx, next) => {
-  const token = ctx.request.headers['authorization']
-  const { username, _id } = await handleAnalyticToken(token)
-  ctx.body = {
-    code: 200,
-    msg: '用户信息',
-    data: {
-      username,
-      id: _id
+  try {
+    const token = ctx.request.headers['authorization']
+    const { username, _id } = await handleAnalyticToken(token)
+    ctx.body = {
+      code: 200,
+      msg: '用户信息',
+      data: {
+        username,
+        id: _id
+      }
     }
+  } catch (error) {
+    ctx.status = 200
+    ctx.body = {
+      code: 500,
+      msg: '获取用户信息失败'
+    }
+    throw new Error(error)
   }
 }
 // 获取所有用户的信息
@@ -103,6 +122,11 @@ const handleReturnAllUserInfo = async (ctx, next) => {
       msg: '返回的所有用户'
     }
   } catch (error) {
+    ctx.status = 200
+    ctx.body = {
+      code: 500,
+      msg: '获取用户信息失败'
+    }
     throw new Error(error)
   }
 }
