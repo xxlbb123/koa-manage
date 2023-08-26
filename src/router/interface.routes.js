@@ -367,7 +367,7 @@ router.post('/interfaceDetail', async (ctx) => {
       code: 500,
       msg: '获取接口详情失败'
     }
-    throw new Error(err)
+    throw new Error(err) //sss
   }
 })
 
