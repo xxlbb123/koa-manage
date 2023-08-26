@@ -28,13 +28,15 @@ function generateMockValue(el) {
     if (el.node.length === 0) {
       return []
     }
-    return value.node.map((v) => generateMockValue(v))
+    return el.node.map((v) => generateMockValue(v))
   } else if (value === 'object' || value === 'any') {
     const res = {}
     el.node.forEach((v) => {
       res[v.name] = generateMockValue(v)
     })
     return res
+  } else if (value === '') {
+    return ''
   } else {
     throw Error('Unexpected value.')
   }
