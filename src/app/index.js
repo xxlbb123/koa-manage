@@ -9,6 +9,7 @@ require('../db/index.js')
 const userRouter = require('../router/users.routes')
 const projectRouter = require('../router/project.routes')
 const interfaceRouter = require('../router/interface.routes')
+const downloaRouter = require('../router/download.routes')
 // 处理静态资源
 const koaStatic = require('koa-static')
 const path = require('path')
@@ -36,7 +37,7 @@ app.use(koaStatic(path.join(__dirname, '../..', '/apidoc')))
 app.use(userRouter.routes(), userRouter.allowedMethods())
 app.use(projectRouter.routes(), projectRouter.allowedMethods())
 app.use(interfaceRouter.routes(), interfaceRouter.allowedMethods())
-
+app.use(downloaRouter.routes(), downloaRouter.allowedMethods())
 // 对错误的处理
 app.on('error', errHandler)
 module.exports = app
