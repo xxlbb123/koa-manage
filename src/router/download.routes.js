@@ -15,7 +15,7 @@ router.get('/template', async (ctx) => {
     ctx.set('Content-Disposition', 'attachment; filename="template.yaml"')
 
     ctx.type = 'application/x-yaml' //设置下载的文件是yaml类型
-    const fileStream = fs.createReadStream(filePath)
+    const fileStream = fs.createReadStream(templateFilePath)
     ctx.body = fileStream
   } catch (error) {
     ctx.status = 200
