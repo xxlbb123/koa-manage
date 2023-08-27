@@ -8,7 +8,8 @@ router.get('/template', async (ctx) => {
     //  设置下载时的文件名称
     const templateFilePath = path.join('/www/wwwroot/template', '测试实例.yaml')
     // 读取文件内容
-    const fileContent = await fs.promises.readFile(templateFilePath)
+    const fileContent = await fs.promises.readFile(templateFilePath, 'utf-8')
+    console.log(fileContent)
     ctx.set('Content-Disposition', 'attachment; filename="测试实例.yaml"')
 
     ctx.type = 'application/x-yaml' //设置下载的文件是yaml类型
