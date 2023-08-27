@@ -11,10 +11,12 @@ router.get('/template', async (ctx) => {
     const fileContent = await fs.readFileSync(templateFilePath, 'utf-8')
 
     console.log(fileContent)
+
     ctx.set('Content-Disposition', 'attachment; filename="template.yaml"')
 
     ctx.type = 'application/x-yaml' //设置下载的文件是yaml类型
-    ctx.body = fileContent //返回文件的内容流
+    const fileStream = fs.createReadStream(filePath)
+    ctx.body = fileStream
   } catch (error) {
     ctx.status = 200
     ctx.body = {
