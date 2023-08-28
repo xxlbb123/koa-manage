@@ -95,29 +95,40 @@ router.post('/importInterface', async (ctx) => {
     const { info } = jwt.verify(ctx.request.headers['authorization'].split(' ')[1], secret)
     // 获取项目的projectId，前端通过form-data传递
     const { projectId } = ctx.request.body
+    const Project = await projectModel.findById(projectId)
+    console.log(Project)
+    if (!Project) {
+      ctx.status = 200
+      ctx.body = {
+        code: 500,
+        msg: '导入失败,未找到该项目'
+      }
+      return
+    }
     // 从接口处获取文件
     const uploadFile = ctx.request.files.swaggerFile
     if (!uploadFile) {
+      ctx.status = 200
       ctx.body = {
         code: 500,
         msg: '请先上传文件'
       }
       return
     }
-    const Project = await projectModel.findById(projectId)
-    if (!Project) {
+    // console.log(uploadFile.filepath, 'uploadFile')
+    const yamlContent = fs.readFileSync(uploadFile.filepath, 'utf8')
+    if (!yamlContent) {
+      ctx.status = 200
       ctx.body = {
         code: 500,
-        msg: '未找到该项目'
+        msg: '导入失败，上传文件为空'
       }
       return
     }
-    console.log(uploadFile.filepath, 'uploadFile')
-    const yamlContent = fs.readFileSync(uploadFile.filepath, 'utf8')
-    console.log(yamlContent, 'sawrxfg')
+    // console.log(yamlContent, 'sawrxfg')
     // 转换为JavaScript对象格式
     const yamlObject = yaml.load(yamlContent)
-    console.log(yamlObject, 'yamlObject')
+    // console.log(yamlObject, 'yamlObject')
     // 所有生成的interfaceId
     Object.keys(yamlObject.paths).forEach((path) => {
       // 这部分是每个方法下面的请求类型，例如post请求,get请求等等
@@ -159,7 +170,7 @@ router.post('/importInterface', async (ctx) => {
   } catch (error) {
     ctx.status = 200
     ctx.body = importSwaggerError
-    throw new Error(error)
+    // throw new Error(error)
   }
 })
 
