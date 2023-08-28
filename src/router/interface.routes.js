@@ -93,7 +93,7 @@ router.post('/createInterface', async (ctx) => {
 router.post('/importInterface', async (ctx) => {
   try {
     const { info } = jwt.verify(ctx.request.headers['authorization'].split(' ')[1], secret)
-    // 获取项目的projectId
+    // 获取项目的projectId，前端通过form-data传递
     const { projectId } = ctx.request.body
     // 从接口处获取文件
     const uploadFile = ctx.request.files.swaggerFile
@@ -119,17 +119,17 @@ router.post('/importInterface', async (ctx) => {
     const yamlObject = yaml.load(yamlContent)
     console.log(yamlObject, 'yamlObject')
     // 所有生成的interfaceId
-    Object.keys(yamlObject.paths).forEach((yaml) => {
+    Object.keys(yamlObject.paths).forEach((path) => {
       // 这部分是每个方法下面的请求类型，例如post请求,get请求等等
       // console.log(yaml)
-      Object.keys(yamlObject.paths[yaml]).forEach(async (method) => {
+      Object.keys(yamlObject.paths[path]).forEach(async (method) => {
         // 这就可以具体看到每个接口下每个请求方法下面的接口数据
         // console.log(yamlObject.paths[yaml][method])
-        const message = yamlObject.paths[yaml][method]
+        const message = yamlObject.paths[path][method]
         console.log(message.name)
         const newInterface = new interfaceModel({
           project: projectId,
-          url: yaml,
+          url: path,
           name: message.name,
           body: message.body,
           response_data: message.responseData,
