@@ -3,6 +3,13 @@ const router = new Router()
 const fs = require('fs')
 const path = require('path')
 router.prefix('/download')
+
+/**
+ * @api  {get} /download/template 下载文件接口
+ * @apiName 下载文件接口
+ * @apiGroup 文件下载
+ * @apiSuccess {String} File 导出的文件信息
+ */
 router.get('/template', async (ctx) => {
   try {
     //  设置下载时的文件名称

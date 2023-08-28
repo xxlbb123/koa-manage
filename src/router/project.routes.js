@@ -25,8 +25,9 @@ router.post('/createProject', async (ctx) => {
   const body = ctx.request.body
   const { name, description, isPrivate } = body
   const { info } = jwt.verify(ctx.request.headers['authorization'].split(' ')[1], secret)
+  console.log(info)
   // 获取创建项目用户的用户名称
-  const { username } = await userModel.findById(info)
+  const { username } = await userModel.findById({ _id: info })
   const newProject = new projectModel({
     name,
     description,
